@@ -16,7 +16,8 @@ import { Button } from "@/components/ui/Button";
 import Link from "next/link";
 import { clsx } from "clsx";
 
-import React from "react";
+import React, { useState, useEffect } from "react";
+import { supabase } from "@/lib/supabase";
 
 export default function ClientDetailLayout({
   children,
@@ -28,6 +29,15 @@ export default function ClientDetailLayout({
   const { id } = React.use(params);
   const pathname = usePathname();
   const router = useRouter();
+  const [client, setClient] = useState<any>(null);
+
+  useEffect(() => {
+    const fetchClient = async () => {
+      const { data } = await supabase.from('clients').select('*').eq('id', id).single();
+      setClient(data);
+    };
+    fetchClient();
+  }, [id]);
 
   const tabs = [
     { label: "Visão Geral", href: `/clients/${id}`, icon: LayoutDashboard },
@@ -39,7 +49,6 @@ export default function ClientDetailLayout({
     { label: "Acessos", href: `/clients/${id}/access`, icon: Lock },
   ];
 
-
   return (
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
@@ -48,8 +57,8 @@ export default function ClientDetailLayout({
             <ChevronLeft className="h-5 w-5" />
           </Button>
           <div>
-            <h2 className="text-2xl font-bold tracking-tight">Dra. Mariana Costa</h2>
-            <p className="text-sm text-muted-foreground">Psicologia • Ativo</p>
+            <h2 className="text-2xl font-bold tracking-tight">{client?.name || "Carregando..."}</h2>
+            <p className="text-sm text-muted-foreground">{client?.niche || "Consultoria"} • {client?.status === 'active' ? 'Ativo' : 'Pausado'}</p>
           </div>
         </div>
       </div>

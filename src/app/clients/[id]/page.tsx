@@ -32,31 +32,96 @@ const performanceData = [
   { name: "Mai", leads: 75, investment: 2100 },
 ];
 
-export default function ClientOverview() {
+import React, { useState, useEffect } from "react";
+import { supabase } from "@/lib/supabase";
+
+export default function ClientOverview({ params }: { params: Promise<{ id: string }> }) {
+  const { id: clientId } = React.use(params);
+  const [stats, setStats] = useState({
+    leads: 0,
+    spent: 0,
+    cpl: 0,
+    roas: 0
+  });
+  const [funnel, setFunnel] = useState<any[]>([]);
+  const [activeCampaigns, setActiveCampaigns] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetchOverviewData();
+  }, [clientId]);
+
+  const fetchOverviewData = async () => {
+    try {
+      const [campaignsRes, leadsRes] = await Promise.all([
+        supabase.from('campaigns').select('*').eq('client_id', clientId),
+        supabase.from('leads').select('*').eq('client_id', clientId)
+      ]);
+
+      const camps = campaignsRes.data || [];
+      const leads = leadsRes.data || [];
+
+      const totalSpent = camps.reduce((acc, curr) => acc + (Number(curr.spent) || 0), 0);
+      const totalLeads = leads.length;
+      const avgCpl = totalLeads > 0 ? totalSpent / totalLeads : 0;
+
+      setStats({
+        leads: totalLeads,
+        spent: totalSpent,
+        cpl: avgCpl,
+        roas: camps.reduce((acc, curr) => acc + (Number(curr.roas) || 0), 0) / (camps.length || 1)
+      });
+
+      // Funil baseado nos status dos leads
+      const stages = [
+        { label: "Leads Totais", status: "new_lead", color: "bg-blue-500" },
+        { label: "Qualificados", status: "qualified", color: "bg-purple-500" },
+        { label: "Agendados", status: "scheduled", color: "bg-indigo-500" },
+        { label: "Fechados", status: "closed", color: "bg-emerald-500" }
+      ];
+
+      const funnelData = stages.map(stage => {
+        const count = leads.filter(l => l.status === stage.status || (stage.status === 'new_lead' && l.status !== 'lost')).length;
+        return {
+          label: stage.label,
+          value: count,
+          percent: totalLeads > 0 ? Math.round((count / totalLeads) * 100) : 0,
+          color: stage.color
+        };
+      });
+
+      setFunnel(funnelData);
+      setActiveCampaigns(camps.filter(c => c.status === 'running'));
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const chartData = [
+    { name: "Total", leads: stats.leads, investment: stats.spent }
+  ];
+
+  if (loading) return <div className="p-8 text-center animate-pulse text-muted-foreground uppercase tracking-widest text-xs">Sincronizando dados estratégicos...</div>;
+
   return (
     <div className="space-y-8">
       {/* Resumo Executivo */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         {[
-          { label: "Seguidores", value: "12.4k", icon: Users, trend: "+120", positive: true },
-          { label: "Investimento", value: "R$ 2.100", icon: DollarSign, trend: "+R$ 300", positive: false },
-          { label: "Leads", value: "75", icon: MessageSquare, trend: "+24%", positive: true },
-          { label: "CPL", value: "R$ 28,00", icon: Target, trend: "-R$ 4,00", positive: true },
+          { label: "Investimento Total", value: `R$ ${stats.spent.toLocaleString()}`, icon: DollarSign, positive: false },
+          { label: "Leads Gerados", value: stats.leads, icon: MessageSquare, positive: true },
+          { label: "CPL Médio", value: `R$ ${stats.cpl.toLocaleString()}`, icon: Target, positive: true },
+          { label: "ROAS Médio", value: `${stats.roas.toFixed(1)}x`, icon: TrendingUp, positive: true },
         ].map((stat, i) => (
-          <Card key={i}>
+          <Card key={i} className="hover:border-primary/50 transition-colors">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">{stat.label}</CardTitle>
-              <stat.icon className="h-4 w-4 text-muted-foreground" />
+              <CardTitle className="text-xs font-bold uppercase tracking-tighter opacity-70">{stat.label}</CardTitle>
+              <stat.icon className="h-4 w-4 text-primary" />
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">{stat.value}</div>
-              <div className="flex items-center gap-1 mt-1">
-                {stat.positive ? <ArrowUpRight className="h-3 w-3 text-emerald-500" /> : <ArrowDownRight className="h-3 w-3 text-red-500" />}
-                <span className={`text-xs font-medium ${stat.positive ? 'text-emerald-500' : 'text-red-500'}`}>
-                  {stat.trend}
-                </span>
-                <span className="text-xs text-muted-foreground ml-1">vs anterior</span>
-              </div>
             </CardContent>
           </Card>
         ))}
@@ -64,13 +129,13 @@ export default function ClientOverview() {
 
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
         {/* Gráfico de Crescimento */}
-        <Card className="col-span-4">
+        <Card className="col-span-full lg:col-span-4 h-[350px]">
           <CardHeader>
-            <CardTitle className="text-base">Geração de Leads vs Investimento</CardTitle>
+            <CardTitle className="text-base">Métricas Consolidadas</CardTitle>
           </CardHeader>
-          <CardContent className="h-[300px]">
+          <CardContent className="h-full pb-10">
             <ResponsiveContainer width="100%" height="100%">
-              <AreaChart data={performanceData}>
+              <AreaChart data={chartData}>
                 <defs>
                   <linearGradient id="colorLeads" x1="0" y1="0" x2="0" y2="1">
                     <stop offset="5%" stopColor="var(--primary)" stopOpacity={0.3} />
@@ -89,25 +154,20 @@ export default function ClientOverview() {
           </CardContent>
         </Card>
 
-        {/* Métricas Comerciais */}
-        <Card className="col-span-3">
+        {/* Funil Comercial */}
+        <Card className="col-span-full lg:col-span-3">
           <CardHeader>
-            <CardTitle className="text-base">Funil Comercial</CardTitle>
+            <CardTitle className="text-base">Funil de Vendas Reais</CardTitle>
           </CardHeader>
           <CardContent className="space-y-6">
-            {[
-              { label: "Leads Totais", value: 75, percent: 100 },
-              { label: "Agendamentos", value: 32, percent: 42 },
-              { label: "Comparecimento", value: 24, percent: 75 },
-              { label: "Fechamentos", value: 8, percent: 33 },
-            ].map((item, i) => (
+            {funnel.map((item, i) => (
               <div key={i} className="space-y-2">
                 <div className="flex items-center justify-between text-sm">
                   <span className="text-muted-foreground">{item.label}</span>
                   <span className="font-bold">{item.value} <span className="text-xs font-normal text-muted-foreground">({item.percent}%)</span></span>
                 </div>
                 <div className="h-2 w-full bg-secondary rounded-full overflow-hidden">
-                  <div className="h-full bg-primary" style={{ width: `${item.percent}%` }} />
+                  <div className={`h-full ${item.color}`} style={{ width: `${item.percent}%` }} />
                 </div>
               </div>
             ))}
@@ -116,56 +176,37 @@ export default function ClientOverview() {
       </div>
 
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-        {/* Melhores Conteúdos */}
-        <Card className="col-span-2">
+        {/* Resumo de Campanhas Ativas */}
+        <Card className="col-span-full">
           <CardHeader>
-            <CardTitle className="text-base">Conteúdos de Melhor Performance</CardTitle>
+            <CardTitle className="text-base">Campanhas Ativas no Momento</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="space-y-4">
-              {[
-                { title: "3 Sinais de Burnout", type: "Reel", views: "12.4k", eng: "8.2%" },
-                { title: "Como lidar com a ansiedade", type: "Reel", views: "10.1k", eng: "7.5%" },
-                { title: "O que é terapia cognitiva?", type: "Post", views: "4.5k", eng: "5.1%" },
-              ].map((c, i) => (
-                <div key={i} className="flex items-center justify-between p-3 border rounded-lg hover:bg-secondary/30 transition-colors cursor-pointer">
-                  <div className="flex items-center gap-3">
-                    <div className="h-10 w-10 bg-secondary rounded flex items-center justify-center font-bold text-xs text-muted-foreground">IMG</div>
-                    <div>
-                      <p className="text-sm font-medium">{c.title}</p>
-                      <p className="text-xs text-muted-foreground">{c.type}</p>
+            <div className="grid gap-4 md:grid-cols-3">
+              {activeCampaigns.map((camp, i) => (
+                <div key={i} className="p-4 border rounded-xl bg-secondary/10 flex flex-col justify-between">
+                  <div>
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-xs font-bold uppercase text-primary">{camp.objective}</span>
+                      <Badge variant="success" className="text-[9px]">ATIVO</Badge>
                     </div>
+                    <p className="font-bold text-sm truncate">{camp.name}</p>
                   </div>
-                  <div className="text-right">
-                    <p className="text-sm font-bold">{c.views}</p>
-                    <p className="text-xs text-emerald-500">{c.eng} eng.</p>
+                  <div className="mt-4 flex items-center justify-between">
+                    <div className="text-[10px] text-muted-foreground">
+                      <p>LEADS: {camp.leads}</p>
+                      <p>INVESTIDO: R$ {camp.spent?.toLocaleString()}</p>
+                    </div>
+                    <ArrowUpRight className="h-4 w-4 text-primary opacity-50" />
                   </div>
                 </div>
               ))}
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Resumo de Campanhas */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-base">Campanhas Ativas</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            {[
-              { name: "Captação WhatsApp", status: "running", leads: 42 },
-              { name: "Inscrição Workshop", status: "production", leads: 0 },
-            ].map((camp, i) => (
-              <div key={i} className="space-y-1">
-                <div className="flex items-center justify-between text-sm">
-                  <span className="font-medium">{camp.name}</span>
-                  <Badge variant={camp.status === 'running' ? 'success' : 'secondary'}>
-                    {camp.status === 'running' ? 'Rodando' : 'Produção'}
-                  </Badge>
+              {activeCampaigns.length === 0 && (
+                <div className="col-span-full py-6 text-center text-xs text-muted-foreground italic uppercase tracking-widest">
+                  Nenhuma campanha ativa no momento.
                 </div>
-                {camp.leads > 0 && <p className="text-xs text-muted-foreground">{camp.leads} leads gerados</p>}
-              </div>
-            ))}
+              )}
+            </div>
           </CardContent>
         </Card>
       </div>

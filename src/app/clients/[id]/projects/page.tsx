@@ -5,37 +5,46 @@ import { Button } from "@/components/ui/Button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
 
-const projects = [
-  { 
-    id: "1", 
-    name: "Lançamento Workshop Ansiedade", 
-    type: "Lançamento", 
-    status: "active",
-    tasks: 12,
-    tasks_done: 8,
-    metrics: { leads: 150, cpl: "R$ 4,50" }
-  },
-  { 
-    id: "2", 
-    name: "Conteúdo Orgânico - Instagram", 
-    type: "Conteúdo", 
-    status: "active",
-    tasks: 5,
-    tasks_done: 5,
-    metrics: { reach: "45k", eng: "8.5%" }
-  },
-  { 
-    id: "3", 
-    name: "Funil de Vendas Perpétuo", 
-    type: "Funil de Vendas", 
-    status: "paused",
-    tasks: 20,
-    tasks_done: 2,
-    metrics: { sales: 0, roas: "0x" }
-  },
-];
+import React, { useState, useEffect } from "react";
+import { supabase } from "@/lib/supabase";
 
-export default function ClientProjects() {
+export default function ClientProjects({ params }: { params: Promise<{ id: string }> }) {
+  const { id: clientId } = React.use(params);
+  const [projects, setProjects] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetchProjects();
+  }, [clientId]);
+
+  const fetchProjects = async () => {
+    try {
+      const [projectsRes, tasksRes] = await Promise.all([
+        supabase.from('projects').select('*').eq('client_id', clientId),
+        supabase.from('tasks').select('*').eq('client_id', clientId)
+      ]);
+
+      const projectsData = projectsRes.data || [];
+      const tasksData = tasksRes.data || [];
+
+      const enrichedProjects = projectsData.map(proj => {
+        const projTasks = tasksData.filter(t => t.project_id === proj.id);
+        const doneTasks = projTasks.filter(t => t.status === 'done');
+        return {
+          ...proj,
+          tasks_count: projTasks.length,
+          tasks_done: doneTasks.length
+        };
+      });
+
+      setProjects(enrichedProjects);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div className="space-y-8">
       <div className="flex items-center justify-between">
@@ -54,7 +63,7 @@ export default function ClientProjects() {
           <Card key={project.id} className="hover:border-primary/50 transition-all cursor-pointer group">
             <CardHeader className="pb-2">
               <div className="flex items-center justify-between mb-2">
-                <Badge variant="outline" className="text-[10px] uppercase">{project.type}</Badge>
+                <Badge variant="outline" className="text-[10px] uppercase tracking-widest">{project.type || 'Geral'}</Badge>
                 <Button variant="ghost" size="icon" className="h-6 w-6 opacity-0 group-hover:opacity-100">
                   <MoreHorizontal className="h-4 w-4" />
                 </Button>
@@ -65,34 +74,19 @@ export default function ClientProjects() {
               <div className="space-y-2">
                 <div className="flex items-center justify-between text-xs text-muted-foreground">
                   <span>Progresso das Tarefas</span>
-                  <span>{project.tasks_done}/{project.tasks}</span>
+                  <span>{project.tasks_done}/{project.tasks_count}</span>
                 </div>
                 <div className="h-1.5 w-full bg-secondary rounded-full overflow-hidden">
                   <div 
                     className="h-full bg-primary" 
-                    style={{ width: `${(project.tasks_done / project.tasks) * 100}%` }} 
+                    style={{ width: `${(project.tasks_done / (project.tasks_count || 1)) * 100}%` }} 
                   />
                 </div>
-              </div>
-
-              <div className="grid grid-cols-2 gap-4 pt-2">
-                {Object.entries(project.metrics).map(([key, val], idx) => (
-                  <div key={idx} className="bg-secondary/30 rounded-lg p-2 border border-border/50">
-                    <p className="text-[10px] text-muted-foreground uppercase tracking-wider">{key}</p>
-                    <p className="text-sm font-bold">{val}</p>
-                  </div>
-                ))}
               </div>
 
               <div className="flex items-center gap-1 pt-4 border-t">
                 <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-primary">
                   <CheckSquare className="h-4 w-4" />
-                </Button>
-                <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-primary">
-                  <Megaphone className="h-4 w-4" />
-                </Button>
-                <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-primary">
-                  <FileText className="h-4 w-4" />
                 </Button>
                 <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-primary ml-auto">
                   <Calendar className="h-4 w-4" />
@@ -101,6 +95,13 @@ export default function ClientProjects() {
             </CardContent>
           </Card>
         ))}
+
+        {projects.length === 0 && !loading && (
+          <div className="col-span-full py-16 text-center bg-secondary/10 rounded-xl border-2 border-dashed border-border/50">
+            <Target className="h-12 w-12 mx-auto text-muted-foreground opacity-20 mb-4" />
+            <p className="text-muted-foreground italic">Nenhum projeto registrado.</p>
+          </div>
+        )}
       </div>
     </div>
   );

@@ -9,8 +9,9 @@ import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
 export function AppLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const isLoginPage = pathname === "/login";
+  const isSetupPage = pathname === "/setup-admin";
 
-  if (isLoginPage) {
+  if (isLoginPage || isSetupPage) {
     return <>{children}</>;
   }
 

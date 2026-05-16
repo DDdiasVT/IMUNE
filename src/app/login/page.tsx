@@ -87,6 +87,24 @@ export default function LoginPage() {
                 {!loading && <ArrowRight className="h-5 w-5" />}
               </Button>
             </form>
+            
+            <div className="mt-6 pt-6 border-t border-border/50">
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                className="w-full text-[10px] uppercase tracking-widest text-muted-foreground hover:text-primary"
+                onClick={async () => {
+                  const { error } = await supabase.auth.signInWithOtp({
+                    email: 'joaovitordiaso@hotmail.com',
+                    options: { emailRedirectTo: window.location.origin }
+                  });
+                  if (error) alert(error.message);
+                  else alert("Link de acesso enviado! Verifique seu e-mail.");
+                }}
+              >
+                Problemas com a senha? Receber link por e-mail
+              </Button>
+            </div>
           </CardContent>
         </Card>
 

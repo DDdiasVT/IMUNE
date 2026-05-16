@@ -112,6 +112,7 @@ export function Sidebar() {
           Configurações
         </button>
       </div>
-    </div>
+      </div>
+    </>
   );
 }

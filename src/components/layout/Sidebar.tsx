@@ -14,7 +14,8 @@ import {
   BookOpen,
   Settings,
   ShoppingBag,
-  DollarSign
+  DollarSign,
+  ChevronLeft
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/AuthContext";

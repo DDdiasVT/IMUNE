@@ -42,17 +42,19 @@ export default function ClientDetailLayout({
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center gap-4">
-        <Button variant="ghost" size="icon" onClick={() => router.push("/clients")}>
-          <ChevronLeft className="h-5 w-5" />
-        </Button>
-        <div>
-          <h2 className="text-2xl font-bold tracking-tight">Dra. Mariana Costa</h2>
-          <p className="text-sm text-muted-foreground">Psicologia • Cliente desde Jan 2024</p>
+      <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
+        <div className="flex items-center gap-4">
+          <Button variant="ghost" size="icon" onClick={() => router.push("/clients")}>
+            <ChevronLeft className="h-5 w-5" />
+          </Button>
+          <div>
+            <h2 className="text-2xl font-bold tracking-tight">Dra. Mariana Costa</h2>
+            <p className="text-sm text-muted-foreground">Psicologia • Ativo</p>
+          </div>
         </div>
       </div>
 
-      <div className="flex items-center gap-1 border-b pb-px">
+      <div className="flex items-center gap-1 border-b pb-px overflow-x-auto scrollbar-hide whitespace-nowrap">
         {tabs.map((tab) => {
           const isActive = pathname === tab.href;
           return (

@@ -165,9 +165,9 @@ export function KanbanBoard() {
   };
 
   return (
-    <div className="flex gap-6 overflow-x-auto pb-6 h-full scrollbar-thin scrollbar-thumb-primary/10">
+    <div className="flex gap-4 md:gap-6 overflow-x-auto pb-6 h-full scrollbar-thin scrollbar-thumb-primary/10 snap-x snap-mandatory px-1">
       {columns.map((column) => (
-        <div key={column.id} className="kanban-column min-w-[320px] flex flex-col h-full bg-secondary/10 rounded-xl p-4 border border-border/50">
+        <div key={column.id} className="kanban-column min-w-[280px] md:min-w-[320px] flex flex-col h-full bg-secondary/10 rounded-xl p-4 border border-border/50 snap-center">
           <div className="flex items-center justify-between mb-6 shrink-0">
             <div className="flex items-center gap-2">
               <div className={`h-2.5 w-2.5 rounded-full ${column.color} shadow-[0_0_8px_rgba(var(--primary-rgb),0.5)]`} />

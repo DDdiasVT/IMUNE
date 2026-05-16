@@ -97,12 +97,12 @@ export default function FinancePage() {
 
   return (
     <div className="space-y-8">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h2 className="text-3xl font-bold tracking-tight">Financeiro Agência</h2>
-          <p className="text-muted-foreground">Faturamento, custos partilhados e lucro real.</p>
+          <h2 className="text-2xl md:text-3xl font-bold tracking-tight">Financeiro Agência</h2>
+          <p className="text-sm text-muted-foreground">Faturamento, custos partilhados e lucro real.</p>
         </div>
-        <Button onClick={() => setIsCostModalOpen(true)} className="gap-2 bg-destructive/10 text-destructive hover:bg-destructive/20 border-destructive/20">
+        <Button onClick={() => setIsCostModalOpen(true)} className="gap-2 bg-destructive/10 text-destructive hover:bg-destructive/20 border-destructive/20 w-full sm:w-auto justify-center">
           <Plus className="h-4 w-4" /> Registrar Custo
         </Button>
       </div>

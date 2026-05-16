@@ -133,30 +133,30 @@ export default function ClientsPage() {
   );
 
   return (
-    <div className="space-y-8">
-      <div className="flex items-center justify-between">
+    <div className="space-y-6 md:space-y-8">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h2 className="text-3xl font-bold tracking-tight">Clientes</h2>
-          <p className="text-muted-foreground">Gerencie sua carteira de clientes e suas performances individuais.</p>
+          <h2 className="text-2xl md:text-3xl font-bold tracking-tight">Clientes</h2>
+          <p className="text-sm text-muted-foreground">Gerencie sua carteira de clientes e suas performances.</p>
         </div>
-        <Button size="sm" className="gap-2" onClick={() => openModal()}>
+        <Button size="sm" className="gap-2 w-full sm:w-auto justify-center" onClick={() => openModal()}>
           <Plus className="h-4 w-4" />
           Novo Cliente
         </Button>
       </div>
 
-      <div className="flex items-center gap-4">
-        <div className="relative flex-1">
+      <div className="flex flex-col md:flex-row items-center gap-4">
+        <div className="relative w-full flex-1">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <input 
             type="text" 
-            placeholder="Buscar por nome, nicho..." 
+            placeholder="Buscar cliente..." 
             className="w-full pl-9 pr-4 py-2 bg-secondary/50 border border-border rounded-lg text-sm outline-none focus:ring-2 focus:ring-primary/20"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
         </div>
-        <Button variant="outline" size="sm" className="gap-2">
+        <Button variant="outline" size="sm" className="gap-2 w-full md:w-auto justify-center">
           <Filter className="h-4 w-4" />
           Filtros
         </Button>
@@ -167,15 +167,15 @@ export default function ClientsPage() {
           <div key={client.id} className="relative group">
             <Link href={`/clients/${client.id}`}>
               <Card className="hover:border-primary/50 transition-all cursor-pointer">
-                <CardContent className="p-6">
+                <CardContent className="p-4 md:p-6">
                   <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-4">
-                      <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold">
+                    <div className="flex items-center gap-3 md:gap-4">
+                      <div className="h-10 w-10 md:h-12 md:w-12 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-sm md:text-base">
                         {client.logo_url}
                       </div>
                       <div>
-                        <h3 className="font-semibold text-lg">{client.name}</h3>
-                        <p className="text-sm text-muted-foreground">{client.niche}</p>
+                        <h3 className="font-semibold text-base md:text-lg">{client.name}</h3>
+                        <p className="text-xs md:text-sm text-muted-foreground">{client.niche}</p>
                       </div>
                     </div>
 

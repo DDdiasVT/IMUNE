@@ -205,8 +205,8 @@ export default function Dashboard() {
         </Card>
       )}
 
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
-        <Card className="col-span-4 h-[400px]">
+      <div className="grid gap-4 grid-cols-1 lg:grid-cols-7">
+        <Card className="col-span-full lg:col-span-4 h-[350px] md:h-[400px]">
           <CardHeader><CardTitle>Crescimento de Faturamento</CardTitle></CardHeader>
           <CardContent className="h-full pb-10">
             <ResponsiveContainer width="100%" height="100%">
@@ -222,7 +222,7 @@ export default function Dashboard() {
           </CardContent>
         </Card>
 
-        <Card className="col-span-3">
+        <Card className="col-span-full lg:col-span-3">
           <CardHeader><CardTitle>Operação Rápida</CardTitle></CardHeader>
           <CardContent className="space-y-4">
             <Link href="/clients"><div className="p-4 border rounded-xl hover:bg-secondary/50 transition-all cursor-pointer flex items-center justify-between group"><div className="flex items-center gap-3"><div className="h-10 w-10 bg-primary/10 rounded-full flex items-center justify-center text-primary"><Users className="h-5 w-5" /></div><div><p className="font-bold text-sm">Gerenciar Clientes</p><p className="text-xs text-muted-foreground">Ver lista e dados estratégicos</p></div></div><ArrowUpRight className="h-4 w-4 opacity-0 group-hover:opacity-100 transition-opacity" /></div></Link>

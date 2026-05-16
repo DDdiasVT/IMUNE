@@ -19,13 +19,13 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="pt-BR" className="dark">
-      <body className={`${inter.className} bg-background text-foreground antialiased overflow-hidden`}>
+      <body className={`${inter.className} bg-background text-foreground antialiased`}>
         <AuthProvider>
-          <div className="flex h-screen overflow-hidden">
+          <div className="flex min-h-screen">
             <Sidebar />
-            <div className="flex flex-1 flex-col pl-64 overflow-hidden">
+            <div className="flex flex-1 flex-col md:pl-64 min-h-screen">
               <Header />
-              <main className="flex-1 overflow-y-auto p-8 custom-scrollbar">
+              <main className="flex-1 p-4 md:p-8">
                 {children}
               </main>
             </div>

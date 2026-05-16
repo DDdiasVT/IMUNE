@@ -45,16 +45,44 @@ export function Sidebar() {
   });
 
   return (
-    <div className="flex flex-col h-full bg-card border-r w-64 fixed left-0 top-0 overflow-y-auto scrollbar-hide">
-      <div className="p-6 flex items-center gap-3">
-        <div className="h-8 w-8 bg-primary rounded-lg flex items-center justify-center shadow-[0_0_15px_rgba(var(--primary-rgb),0.5)]">
-          <div className="h-4 w-4 bg-white rounded-full animate-pulse" />
+    <>
+      {/* Overlay para fechar no mobile ao clicar fora */}
+      <div 
+        id="sidebar-overlay"
+        className="fixed inset-0 bg-black/50 z-40 md:hidden hidden transition-opacity"
+        onClick={() => {
+          document.getElementById('sidebar')?.classList.add('-translate-x-full');
+          document.getElementById('sidebar-overlay')?.classList.add('hidden');
+        }}
+      />
+
+      <div 
+        id="sidebar"
+        className={cn(
+          "flex flex-col h-full bg-card border-r w-64 fixed left-0 top-0 z-50 transition-transform duration-300 ease-in-out overflow-y-auto scrollbar-hide md:translate-x-0 -translate-x-full"
+        )}
+      >
+        <div className="p-6 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="h-8 w-8 bg-primary rounded-lg flex items-center justify-center shadow-[0_0_15px_rgba(var(--primary-rgb),0.5)]">
+              <div className="h-4 w-4 bg-white rounded-full animate-pulse" />
+            </div>
+            <div>
+              <h1 className="text-lg font-bold tracking-tighter text-white leading-tight">IMUNE</h1>
+              <p className="text-[9px] uppercase tracking-widest text-primary font-bold">Performance OS</p>
+            </div>
+          </div>
+          {/* Botão de fechar só no mobile */}
+          <button 
+            className="md:hidden p-2 text-muted-foreground"
+            onClick={() => {
+              document.getElementById('sidebar')?.classList.add('-translate-x-full');
+              document.getElementById('sidebar-overlay')?.classList.add('hidden');
+            }}
+          >
+            <ChevronLeft className="h-5 w-5" />
+          </button>
         </div>
-        <div>
-          <h1 className="text-lg font-bold tracking-tighter text-white leading-tight">IMUNE</h1>
-          <p className="text-[9px] uppercase tracking-widest text-primary font-bold">Performance OS</p>
-        </div>
-      </div>
       <nav className="flex-1 px-4 space-y-1 pb-10">
         {filteredMenuItems.map((item) => {
           const isActive = pathname === item.href;

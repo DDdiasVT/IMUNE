@@ -2,7 +2,9 @@ export type Profile = {
   id: string;
   full_name: string | null;
   avatar_url: string | null;
-  role: 'admin' | 'member';
+  role: 'admin' | 'member' | 'client';
+  role_description?: string | null; // Ex: Gestor de Tráfego, CEO, etc.
+  client_id?: string | null; // Vincula o usuário a um cliente específico
   updated_at: string;
 };
 

@@ -30,8 +30,10 @@ import {
 } from "recharts";
 import { supabase } from "@/lib/supabase";
 import Link from "next/link";
+import { useAuth } from "@/contexts/AuthContext";
 
 export default function Dashboard() {
+  const { profile, isAdmin, isClient } = useAuth();
   const [stats, setStats] = useState({
     revenue: 0,
     leads: 0,
@@ -45,16 +47,29 @@ export default function Dashboard() {
   const [goalFormData, setGoalFormData] = useState({ target_value: "", prize_description: "" });
 
   useEffect(() => {
-    fetchDashboardData();
-  }, []);
+    if (profile) fetchDashboardData();
+  }, [profile]);
 
   const fetchDashboardData = async () => {
     try {
+      let salesQuery = supabase.from('sales').select('*, clients(billing_model, partnership_percentage)');
+      let metricsQuery = supabase.from('metrics').select('revenue, leads, period_date').order('period_date', { ascending: true });
+      let clientsQuery = supabase.from('clients').select('*', { count: 'exact', head: true }).eq('status', 'active');
+      let tasksQuery = supabase.from('tasks').select('*', { count: 'exact', head: true }).eq('status', 'pending');
+
+      // Filtro Multi-tenant: Se for cliente, só vê o dele
+      if (isClient && profile?.client_id) {
+        salesQuery = salesQuery.eq('client_id', profile.client_id);
+        metricsQuery = metricsQuery.eq('client_id', profile.client_id);
+        clientsQuery = clientsQuery.eq('id', profile.client_id);
+        tasksQuery = tasksQuery.eq('client_id', profile.client_id);
+      }
+
       const [metricsRes, salesRes, clientsRes, tasksRes, goalRes] = await Promise.all([
-        supabase.from('metrics').select('revenue, leads, period_date').order('period_date', { ascending: true }),
-        supabase.from('sales').select('*, clients(billing_model, partnership_percentage)'),
-        supabase.from('clients').select('*', { count: 'exact', head: true }).eq('status', 'active'),
-        supabase.from('tasks').select('*', { count: 'exact', head: true }).eq('status', 'pending'),
+        metricsQuery,
+        salesQuery,
+        clientsQuery,
+        tasksQuery,
         supabase.from('monthly_goals').select('*').order('created_at', { ascending: false }).limit(1).single()
       ]);
 
@@ -63,6 +78,7 @@ export default function Dashboard() {
         const perc = isPartnership ? (curr.clients?.partnership_percentage / 100) : 1;
         return acc + ((curr.value || 0) * perc);
       }, 0) || 0;
+
       const totalLeads = metricsRes.data?.reduce((acc, curr) => acc + (curr.leads || 0), 0) || 0;
 
       setStats({
@@ -113,8 +129,8 @@ export default function Dashboard() {
     <div className="space-y-8 pb-10">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 text-white">
         <div>
-          <h2 className="text-3xl font-bold tracking-tight">Dashboard Cristina OS</h2>
-          <p className="text-muted-foreground">Aqui está o resumo da sua operação.</p>
+          <h2 className="text-3xl font-bold tracking-tight text-white">Dashboard IMUNE</h2>
+          <p className="text-muted-foreground">Bem-vindo ao centro de performance da sua agência.</p>
         </div>
         <div className="flex gap-3">
           <Link href="/crm"><Button className="gap-2"><Plus className="h-4 w-4" /> Novo Lead</Button></Link>
@@ -123,57 +139,71 @@ export default function Dashboard() {
       </div>
 
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+        {!isClient && (
+          <Card className="hover:border-primary/50 transition-colors">
+            <CardHeader className="flex flex-row items-center justify-between pb-2"><CardTitle className="text-sm font-medium uppercase tracking-tighter opacity-70">Faturamento Líquido</CardTitle><DollarSign className="h-4 w-4 text-primary" /></CardHeader>
+            <CardContent><div className="text-2xl font-bold">R$ {stats.revenue.toLocaleString()}</div></CardContent>
+          </Card>
+        )}
+        
         <Card className="hover:border-primary/50 transition-colors">
-          <CardHeader className="flex flex-row items-center justify-between pb-2"><CardTitle className="text-sm font-medium">Faturamento Total</CardTitle><DollarSign className="h-4 w-4 text-primary" /></CardHeader>
-          <CardContent><div className="text-2xl font-bold">R$ {stats.revenue.toLocaleString()}</div></CardContent>
-        </Card>
-        <Card className="hover:border-primary/50 transition-colors">
-          <CardHeader className="flex flex-row items-center justify-between pb-2"><CardTitle className="text-sm font-medium">Leads Gerados</CardTitle><Target className="h-4 w-4 text-primary" /></CardHeader>
+          <CardHeader className="flex flex-row items-center justify-between pb-2"><CardTitle className="text-sm font-medium uppercase tracking-tighter opacity-70">Leads Gerados</CardTitle><Target className="h-4 w-4 text-primary" /></CardHeader>
           <CardContent><div className="text-2xl font-bold">{stats.leads}</div></CardContent>
         </Card>
+
+        {!isClient ? (
+          <Card className="hover:border-primary/50 transition-colors">
+            <CardHeader className="flex flex-row items-center justify-between pb-2"><CardTitle className="text-sm font-medium uppercase tracking-tighter opacity-70">Clientes Ativos</CardTitle><Briefcase className="h-4 w-4 text-primary" /></CardHeader>
+            <CardContent><div className="text-2xl font-bold">{stats.activeClients}</div></CardContent>
+          </Card>
+        ) : (
+          <Card className="hover:border-primary/50 transition-colors">
+            <CardHeader className="flex flex-row items-center justify-between pb-2"><CardTitle className="text-sm font-medium uppercase tracking-tighter opacity-70">Minhas Vendas</CardTitle><Briefcase className="h-4 w-4 text-primary" /></CardHeader>
+            <CardContent><div className="text-2xl font-bold">R$ {stats.revenue.toLocaleString()}</div></CardContent>
+          </Card>
+        )}
+
         <Card className="hover:border-primary/50 transition-colors">
-          <CardHeader className="flex flex-row items-center justify-between pb-2"><CardTitle className="text-sm font-medium">Clientes Ativos</CardTitle><Briefcase className="h-4 w-4 text-primary" /></CardHeader>
-          <CardContent><div className="text-2xl font-bold">{stats.activeClients}</div></CardContent>
-        </Card>
-        <Card className="hover:border-primary/50 transition-colors">
-          <CardHeader className="flex flex-row items-center justify-between pb-2"><CardTitle className="text-sm font-medium">Tarefas Pendentes</CardTitle><CheckSquare className="h-4 w-4 text-primary" /></CardHeader>
+          <CardHeader className="flex flex-row items-center justify-between pb-2"><CardTitle className="text-sm font-medium uppercase tracking-tighter opacity-70">Tarefas Pendentes</CardTitle><CheckSquare className="h-4 w-4 text-primary" /></CardHeader>
           <CardContent><div className="text-2xl font-bold text-amber-500">{stats.pendingTasks}</div></CardContent>
         </Card>
       </div>
 
-      {/* Barra de Meta do Mês */}
-      <Card className="bg-primary/10 border-primary/20 overflow-hidden relative">
-        <div className="absolute top-0 right-0 p-6 opacity-10 pointer-events-none">
-          <Trophy className="h-24 w-24 rotate-12" />
-        </div>
-        <CardContent className="p-6">
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-            <div className="flex-1 space-y-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <h3 className="text-xl font-bold flex items-center gap-2">
-                    Objetivo do Mês <span className="text-sm font-normal text-muted-foreground">({Math.min((stats.revenue / (goal?.target_value || 1)) * 100, 100).toFixed(0)}%)</span>
-                  </h3>
-                  <p className="text-xs text-muted-foreground">Prêmio: <span className="text-amber-500 font-bold">{goal?.prize_description || "Defina um prêmio!"}</span></p>
+      {/* Barra de Meta do Mês - Só para Admin */}
+      {isAdmin && (
+        <Card className="bg-primary/10 border-primary/20 overflow-hidden relative">
+          <div className="absolute top-0 right-0 p-6 opacity-10 pointer-events-none">
+            <Trophy className="h-24 w-24 rotate-12" />
+          </div>
+          <CardContent className="p-6">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+              <div className="flex-1 space-y-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h3 className="text-xl font-bold flex items-center gap-2">
+                      Objetivo do Mês <span className="text-sm font-normal text-muted-foreground">({Math.min((stats.revenue / (goal?.target_value || 1)) * 100, 100).toFixed(0)}%)</span>
+                    </h3>
+                    <p className="text-xs text-muted-foreground">Prêmio: <span className="text-amber-500 font-bold">{goal?.prize_description || "Defina um prêmio!"}</span></p>
+                  </div>
+                  <Button variant="ghost" size="sm" onClick={() => setIsGoalModalOpen(true)} className="gap-2">
+                    <Edit2 className="h-3 w-3" /> Ajustar Meta
+                  </Button>
                 </div>
-                <Button variant="ghost" size="sm" onClick={() => setIsGoalModalOpen(true)} className="gap-2">
-                  <Edit2 className="h-3 w-3" /> Ajustar Meta
-                </Button>
-              </div>
-              <div className="h-3 w-full bg-secondary rounded-full overflow-hidden border border-border/50">
-                <div 
-                  className="h-full bg-primary rounded-full transition-all duration-1000 shadow-[0_0_10px_rgba(var(--primary-rgb),0.5)]" 
-                  style={{ width: `${Math.min((stats.revenue / (goal?.target_value || 1)) * 100, 100)}%` }}
-                />
-              </div>
-              <div className="flex justify-between text-[10px] font-bold uppercase tracking-widest opacity-60">
-                <span>R$ {stats.revenue.toLocaleString()}</span>
-                <span>META: R$ {goal?.target_value.toLocaleString() || '0'}</span>
+                <div className="h-3 w-full bg-secondary rounded-full overflow-hidden border border-border/50">
+                  <div 
+                    className="h-full bg-primary rounded-full transition-all duration-1000 shadow-[0_0_10px_rgba(var(--primary-rgb),0.5)]" 
+                    style={{ width: `${Math.min((stats.revenue / (goal?.target_value || 1)) * 100, 100)}%` }}
+                  />
+                </div>
+                <div className="flex justify-between text-[10px] font-bold uppercase tracking-widest opacity-60">
+                  <span>R$ {stats.revenue.toLocaleString()}</span>
+                  <span>META: R$ {goal?.target_value.toLocaleString() || '0'}</span>
+                </div>
               </div>
             </div>
-          </div>
-        </CardContent>
-      </Card>
+          </CardContent>
+        </Card>
+      )}
 
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
         <Card className="col-span-4 h-[400px]">

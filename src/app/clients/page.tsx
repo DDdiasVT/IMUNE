@@ -10,6 +10,7 @@ import { Input } from "@/components/ui/Input";
 import Link from "next/link";
 import { db } from "@/lib/services";
 import { Client } from "@/types";
+import { supabase } from "@/lib/supabase";
 
 export default function ClientsPage() {
   const [clients, setClients] = useState<Client[]>([]);
@@ -24,8 +25,9 @@ export default function ClientsPage() {
     niche: "",
     status: "active" as Client['status'],
     responsible_id: "",
+    initialEmail: "",
+    initialPassword: ""
   });
-
 
   useEffect(() => {
     fetchClients();
@@ -45,18 +47,47 @@ export default function ClientsPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
+      let clientId = "";
       if (editingClient) {
-        await db.clients.update(editingClient.id, formData);
+        await db.clients.update(editingClient.id, {
+          name: formData.name,
+          niche: formData.niche,
+          status: formData.status,
+          responsible_id: formData.responsible_id
+        });
+        clientId = editingClient.id;
       } else {
-        await db.clients.create({
-          ...formData,
+        const newClient = await db.clients.create({
+          name: formData.name,
+          niche: formData.niche,
+          status: formData.status,
+          responsible_id: formData.responsible_id,
           logo_url: formData.name.substring(0, 2).toUpperCase(),
         });
+        clientId = newClient.id;
+
+        // Criar acesso inicial se preenchido
+        if (formData.initialEmail && formData.initialPassword) {
+          const { data: authData, error: authError } = await supabase.auth.signUp({
+            email: formData.initialEmail,
+            password: formData.initialPassword,
+          });
+
+          if (!authError && authData.user) {
+            await supabase.from('profiles').insert({
+              id: authData.user.id,
+              full_name: formData.name + " (Admin)",
+              role: 'client',
+              client_id: clientId,
+              updated_at: new Date().toISOString()
+            });
+          }
+        }
       }
       fetchClients();
       closeModal();
     } catch (err) {
-      alert("Erro ao salvar cliente. Verifique se você rodou o SQL no Supabase.");
+      alert("Erro ao salvar cliente.");
     }
   };
 
@@ -81,10 +112,12 @@ export default function ClientsPage() {
         niche: client.niche || "",
         status: client.status,
         responsible_id: client.responsible_id || "",
+        initialEmail: "",
+        initialPassword: ""
       });
     } else {
       setEditingClient(null);
-      setFormData({ name: "", niche: "", status: "active", responsible_id: "" });
+      setFormData({ name: "", niche: "", status: "active", responsible_id: "", initialEmail: "", initialPassword: "" });
     }
     setIsModalOpen(true);
   };
@@ -182,25 +215,50 @@ export default function ClientsPage() {
         title={editingClient ? "Editar Cliente" : "Adicionar Cliente"}
       >
         <form onSubmit={handleSubmit} className="space-y-4">
+          <div className="grid grid-cols-2 gap-4">
+            <Input 
+              label="Nome do Cliente" 
+              placeholder="Ex: Dra. Mariana Costa" 
+              value={formData.name}
+              onChange={(e) => setFormData({...formData, name: e.target.value})}
+              required
+            />
+            <Input 
+              label="Nicho / Ramo" 
+              placeholder="Ex: Psicologia" 
+              value={formData.niche}
+              onChange={(e) => setFormData({...formData, niche: e.target.value})}
+            />
+          </div>
           <Input 
-            label="Nome do Cliente" 
-            placeholder="Ex: Dra. Mariana Costa" 
-            value={formData.name}
-            onChange={(e) => setFormData({...formData, name: e.target.value})}
-            required
-          />
-          <Input 
-            label="Nicho / Ramo" 
-            placeholder="Ex: Psicologia, E-commerce" 
-            value={formData.niche}
-            onChange={(e) => setFormData({...formData, niche: e.target.value})}
-          />
-          <Input 
-            label="Responsável" 
-            placeholder="Nome do gestor na agência" 
+            label="Responsável na IMUNE" 
+            placeholder="Nome do gestor" 
             value={formData.responsible_id}
             onChange={(e) => setFormData({...formData, responsible_id: e.target.value})}
           />
+          
+          {!editingClient && (
+            <div className="p-4 bg-primary/5 border border-primary/20 rounded-xl space-y-3">
+              <p className="text-[10px] uppercase font-bold text-primary tracking-widest">Criar Primeiro Acesso (Opcional)</p>
+              <div className="grid grid-cols-2 gap-3">
+                <Input 
+                  label="E-mail de Acesso" 
+                  type="email"
+                  placeholder="cliente@email.com" 
+                  value={formData.initialEmail}
+                  onChange={(e) => setFormData({...formData, initialEmail: e.target.value})}
+                />
+                <Input 
+                  label="Senha de Acesso" 
+                  type="password"
+                  placeholder="Min. 6 caracteres" 
+                  value={formData.initialPassword}
+                  onChange={(e) => setFormData({...formData, initialPassword: e.target.value})}
+                />
+              </div>
+            </div>
+          )}
+
           <div className="space-y-1.5">
             <label className="text-sm font-medium text-muted-foreground ml-1">Status</label>
             <select 

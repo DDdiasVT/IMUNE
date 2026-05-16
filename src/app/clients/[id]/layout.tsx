@@ -9,7 +9,8 @@ import {
   Megaphone,
   Info,
   Settings,
-  ChevronLeft
+  ChevronLeft,
+  Lock
 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import Link from "next/link";
@@ -35,7 +36,9 @@ export default function ClientDetailLayout({
     { label: "Conteúdo", href: `/clients/${id}/content`, icon: FileText },
     { label: "Tarefas", href: `/clients/${id}/tasks`, icon: CheckSquare },
     { label: "Dados do Cliente", href: `/clients/${id}/info`, icon: Info },
+    { label: "Acessos", href: `/clients/${id}/access`, icon: Lock },
   ];
+
 
   return (
     <div className="space-y-6">

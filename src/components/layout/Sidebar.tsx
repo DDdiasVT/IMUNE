@@ -17,6 +17,7 @@ import {
   DollarSign
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useAuth } from "@/contexts/AuthContext";
 
 const menuItems = [
   { icon: LayoutDashboard, label: "Dashboard", href: "/" },
@@ -34,16 +35,28 @@ const menuItems = [
 
 export function Sidebar() {
   const pathname = usePathname();
+  const { isClient } = useAuth();
+
+  const filteredMenuItems = menuItems.filter(item => {
+    if (isClient) {
+      return ["Dashboard", "Campanhas", "Métricas", "Conteúdo"].includes(item.label);
+    }
+    return true;
+  });
 
   return (
     <div className="flex flex-col h-full bg-card border-r w-64 fixed left-0 top-0 overflow-y-auto scrollbar-hide">
-      <div className="p-6">
-        <h1 className="text-xl font-bold bg-gradient-to-r from-primary to-purple-500 bg-clip-text text-transparent">
-          Cristina OS
-        </h1>
+      <div className="p-6 flex items-center gap-3">
+        <div className="h-8 w-8 bg-primary rounded-lg flex items-center justify-center shadow-[0_0_15px_rgba(var(--primary-rgb),0.5)]">
+          <div className="h-4 w-4 bg-white rounded-full animate-pulse" />
+        </div>
+        <div>
+          <h1 className="text-lg font-bold tracking-tighter text-white leading-tight">IMUNE</h1>
+          <p className="text-[9px] uppercase tracking-widest text-primary font-bold">Performance OS</p>
+        </div>
       </div>
       <nav className="flex-1 px-4 space-y-1 pb-10">
-        {menuItems.map((item) => {
+        {filteredMenuItems.map((item) => {
           const isActive = pathname === item.href;
           return (
             <Link

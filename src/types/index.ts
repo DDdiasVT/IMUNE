@@ -85,15 +85,38 @@ export type Project = {
 
 export type Campaign = {
   id: string;
-  client_id: string;
+  client_id: string | null;
   project_id: string | null;
   name: string;
+  description: string | null;
   objective: string | null;
+  platform: string | null;
   status: string;
+  budget: number | null;
+  spent: number | null;
+  leads_actual: number | null;
+  roas_actual: number | null;
+  revenue_actual: number | null;
+  goal_leads: number | null;
+  goal_cpl: number | null;
+  goal_roas: number | null;
+  goal_revenue: number | null;
+  start_date: string | null;
+  end_date: string | null;
+  manager_url: string | null;
   copy_url: string | null;
   creatives_url: string | null;
   metrics_info: any;
   results_summary: string | null;
+  created_at: string;
+  updated_at: string | null;
+};
+
+export type CampaignMember = {
+  id: string;
+  campaign_id: string;
+  name: string;
+  role: string;
   created_at: string;
 };
 
@@ -129,6 +152,7 @@ export type Task = {
   id: string;
   client_id: string | null;
   project_id: string | null;
+  campaign_id: string | null;
   title: string;
   description: string | null;
   priority: 'low' | 'medium' | 'high';
@@ -141,7 +165,7 @@ export type Task = {
 export type Metric = {
   id: string;
   client_id: string | null;
-  date: string;
+  period_date: string;
   followers?: number;
   growth_rate?: number;
   leads_count?: number;

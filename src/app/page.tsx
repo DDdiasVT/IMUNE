@@ -57,8 +57,9 @@ export default function Dashboard() {
       let clientsQuery = supabase.from('clients').select('*', { count: 'exact', head: true }).eq('status', 'active');
       let tasksQuery = supabase.from('tasks').select('*', { count: 'exact', head: true }).eq('status', 'pending');
 
-      // Filtro Multi-tenant: Se for cliente, só vê o dele
-      if (isClient && profile?.client_id) {
+      // Restrição multi-tenant: só admin/member vê tudo; qualquer outro role é filtrado pelo client_id
+      const isAdminOrMember = profile?.role === 'admin' || profile?.role === 'member';
+      if (!isAdminOrMember && profile?.client_id) {
         salesQuery = salesQuery.eq('client_id', profile.client_id);
         metricsQuery = metricsQuery.eq('client_id', profile.client_id);
         clientsQuery = clientsQuery.eq('id', profile.client_id);
@@ -75,7 +76,7 @@ export default function Dashboard() {
 
       const totalRevenue = salesRes.data?.reduce((acc, curr) => {
         const isPartnership = curr.clients?.billing_model === 'partnership';
-        const perc = isPartnership ? (curr.clients?.partnership_percentage / 100) : 1;
+        const perc = isPartnership ? ((curr.clients?.partnership_percentage || 0) / 100) : 1;
         return acc + ((curr.value || 0) * perc);
       }, 0) || 0;
 
@@ -129,7 +130,7 @@ export default function Dashboard() {
     <div className="space-y-8 pb-10">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 text-white">
         <div>
-          <h2 className="text-3xl font-bold tracking-tight text-white">Dashboard IMUNE</h2>
+          <h2 className="text-2xl md:text-3xl font-bold tracking-tight text-white">Dashboard IMUNE</h2>
           <p className="text-muted-foreground">Bem-vindo ao centro de performance da sua agência.</p>
         </div>
         <div className="flex gap-3">

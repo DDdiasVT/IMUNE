@@ -3,7 +3,7 @@
 import React, { createContext, useContext, useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { Profile } from "@/types";
-import { useRouter, usePathname } from "next/navigation";
+import { useRouter } from "next/navigation";
 
 type AuthContextType = {
   user: any;
@@ -16,38 +16,63 @@ type AuthContextType = {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
+async function fetchProfile(userId: string): Promise<Profile | null> {
+  const { data } = await supabase
+    .from("profiles")
+    .select("*")
+    .eq("id", userId)
+    .single();
+  return data ?? null;
+}
+
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<any>(null);
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
   const router = useRouter();
-  const pathname = usePathname();
 
   useEffect(() => {
-    // 1. Escutar mudanças na autenticação
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-      const currentUser = session?.user || null;
-      setUser(currentUser);
+    let mounted = true;
 
+    // Resolve estado inicial imediatamente sem esperar pelo listener
+    supabase.auth.getSession().then(async ({ data: { session } }) => {
+      if (!mounted) return;
+      const currentUser = session?.user ?? null;
+      setUser(currentUser);
       if (currentUser) {
-        // 2. Buscar perfil do usuário
-        const { data: profileData } = await supabase
-          .from("profiles")
-          .select("*")
-          .eq("id", currentUser.id)
-          .single();
-        
-        setProfile(profileData);
-      } else {
-        setProfile(null);
-        // Se não estiver logado e não for página de login, redireciona (opcional)
-        // router.push("/login"); 
+        const p = await fetchProfile(currentUser.id);
+        if (mounted) setProfile(p);
       }
-      setLoading(false);
+      if (mounted) setLoading(false);
     });
 
-    return () => subscription.unsubscribe();
-  }, [router]);
+    // Escuta mudanças subsequentes (login, logout, token refresh)
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      if (!mounted) return;
+      if (event === "INITIAL_SESSION") return; // já resolvido pelo getSession()
+
+      const currentUser = session?.user ?? null;
+
+      if (currentUser) {
+        setLoading(true); // spinner enquanto busca perfil
+        setUser(currentUser);
+        const p = await fetchProfile(currentUser.id);
+        if (mounted) {
+          setProfile(p);
+          setLoading(false);
+        }
+      } else {
+        setUser(null);
+        setProfile(null);
+        if (mounted) setLoading(false);
+      }
+    });
+
+    return () => {
+      mounted = false;
+      subscription.unsubscribe();
+    };
+  }, []); // sem dependências — só executa uma vez
 
   const signOut = async () => {
     await supabase.auth.signOut();

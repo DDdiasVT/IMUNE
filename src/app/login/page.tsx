@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { supabase } from "@/lib/supabase";
 import { useRouter } from "next/navigation";
 import { Rocket, Mail, Lock, ArrowRight } from "lucide-react";
@@ -14,6 +14,12 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const router = useRouter();
+
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session) router.replace("/");
+    });
+  }, []);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -94,8 +100,12 @@ export default function LoginPage() {
                 size="sm" 
                 className="w-full text-[10px] uppercase tracking-widest text-muted-foreground hover:text-primary"
                 onClick={async () => {
+                  if (!email) {
+                    alert("Preencha o campo de e-mail antes de solicitar o link.");
+                    return;
+                  }
                   const { error } = await supabase.auth.signInWithOtp({
-                    email: 'joaovitordiaso@hotmail.com',
+                    email,
                     options: { emailRedirectTo: window.location.origin }
                   });
                   if (error) alert(error.message);

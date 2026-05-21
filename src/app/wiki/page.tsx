@@ -96,7 +96,7 @@ export default function WikiPage() {
     <div className="space-y-8">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-3xl font-bold tracking-tight">Base de Conhecimento</h2>
+          <h2 className="text-2xl md:text-3xl font-bold tracking-tight">Base de Conhecimento</h2>
           <p className="text-muted-foreground">Documentação interna, processos e ativos da agência.</p>
         </div>
         <Button size="sm" className="gap-2" onClick={() => openModal()}>
@@ -128,7 +128,7 @@ export default function WikiPage() {
                   <p className="text-xs text-muted-foreground uppercase">{art.category}</p>
                 </div>
               </div>
-              <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+              <div className="flex gap-2 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
                 <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => openModal(art)}>
                   <Edit2 className="h-4 w-4" />
                 </Button>

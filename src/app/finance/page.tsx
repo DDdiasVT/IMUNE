@@ -81,7 +81,7 @@ export default function FinancePage() {
   let totalCommissions = 0;
   sales.forEach(s => {
     const isPartnership = s.clients?.billing_model === 'partnership';
-    const perc = isPartnership ? (s.clients?.partnership_percentage / 100) : 1;
+    const perc = isPartnership ? ((s.clients?.partnership_percentage || 0) / 100) : 1;
     totalRevenue += ((s.value || 0) * perc);
     totalCommissions += (s.commission_value || 0);
   });
@@ -89,7 +89,7 @@ export default function FinancePage() {
   let totalCosts = 0;
   costs.forEach(c => {
     const isPartnership = c.clients?.billing_model === 'partnership';
-    const perc = isPartnership ? (c.clients?.partnership_percentage / 100) : 1;
+    const perc = isPartnership ? ((c.clients?.partnership_percentage || 0) / 100) : 1;
     totalCosts += ((c.value || 0) * perc);
   });
 
@@ -203,7 +203,7 @@ export default function FinancePage() {
                         <p className="text-sm font-bold text-destructive">R$ {agencyCost.toLocaleString()}</p>
                         {isPartnership && <p className="text-[9px] text-muted-foreground">Total: R$ {cost.value.toLocaleString()}</p>}
                       </div>
-                      <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground opacity-0 group-hover:opacity-100 hover:text-destructive" onClick={() => handleDeleteCost(cost.id)}>
+                      <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground opacity-100 sm:opacity-0 sm:group-hover:opacity-100 hover:text-destructive transition-opacity" onClick={() => handleDeleteCost(cost.id)}>
                         <Trash2 className="h-4 w-4" />
                       </Button>
                     </div>
@@ -218,11 +218,11 @@ export default function FinancePage() {
       <Modal isOpen={isCostModalOpen} onClose={() => setIsCostModalOpen(false)} title="Registrar Despesa">
         <form onSubmit={handleAddCost} className="space-y-4">
           <Input label="Descrição do Gasto" value={costFormData.label} onChange={e => setCostFormData({...costFormData, label: e.target.value})} required placeholder="Ex: Adobe, Facebook Ads..." />
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <Input label="Valor Total (R$)" type="number" value={costFormData.value} onChange={e => setCostFormData({...costFormData, value: e.target.value})} required />
             <Input label="Data" type="date" value={costFormData.period_date} onChange={e => setCostFormData({...costFormData, period_date: e.target.value})} required />
           </div>
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-1.5">
               <label className="text-sm font-medium text-muted-foreground">Vincular a Cliente (Opcional)</label>
               <select className="w-full h-10 rounded-lg border bg-secondary/50 px-3 text-sm outline-none" value={costFormData.client_id} onChange={e => setCostFormData({...costFormData, client_id: e.target.value})}>

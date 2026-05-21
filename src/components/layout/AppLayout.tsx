@@ -19,7 +19,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
     <ProtectedRoute>
       <div className="flex min-h-screen">
         <Sidebar />
-        <div className="flex flex-1 flex-col md:pl-64 min-h-screen">
+        <div className="flex flex-1 flex-col md:pl-64 min-h-screen overflow-x-hidden">
           <Header />
           <main className="flex-1 p-4 md:p-8">
             {children}

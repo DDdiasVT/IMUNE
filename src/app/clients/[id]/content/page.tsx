@@ -145,7 +145,7 @@ export default function ClientContentPage({ params }: { params: Promise<{ id: st
 
       <Modal isOpen={isModalOpen} onClose={closeModal} title={editingItem ? "Editar Pauta" : "Nova Pauta"}>
         <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <Input label="Título do Conteúdo" value={formData.title} onChange={(e) => setFormData({...formData, title: e.target.value})} required />
             <div className="space-y-1.5">
               <label className="text-sm font-medium text-muted-foreground">Tipo</label>

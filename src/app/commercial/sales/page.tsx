@@ -60,6 +60,9 @@ export default function SalesPage() {
           salesperson_id: formData.salesperson_id,
           service_id: formData.service_id,
           value: val,
+          discount: 0,
+          commission_value: 0,
+          is_recurring: false,
           status: formData.status,
           closing_date: formData.status === 'closed' ? new Date().toISOString() : null,
         });
@@ -191,10 +194,10 @@ export default function SalesPage() {
                         Cliente Criado
                       </Badge>
                     )}
-                    <Button variant="ghost" size="icon" className="h-8 w-8 opacity-0 group-hover:opacity-100" onClick={() => openModal(sale)}>
+                    <Button variant="ghost" size="icon" className="h-8 w-8 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity" onClick={() => openModal(sale)}>
                       <Edit2 className="h-4 w-4" />
                     </Button>
-                    <Button variant="ghost" size="icon" className="h-8 w-8 opacity-0 group-hover:opacity-100 text-destructive" onClick={() => handleDelete(sale.id)}>
+                    <Button variant="ghost" size="icon" className="h-8 w-8 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity text-destructive" onClick={() => handleDelete(sale.id)}>
                       <Trash2 className="h-4 w-4" />
                     </Button>
                   </div>

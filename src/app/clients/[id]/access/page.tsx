@@ -50,33 +50,25 @@ export default function ClientAccessPage({ params }: { params: Promise<{ id: str
     setStatus(null);
 
     try {
-      // 1. Criar usuário no Auth do Supabase
-      const { data: authData, error: authError } = await supabase.auth.signUp({
-        email: formData.email,
-        password: formData.password,
+      const res = await fetch("/api/create-user", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          email: formData.email,
+          password: formData.password,
+          full_name: formData.full_name,
+          role_description: formData.role_description,
+          client_id: clientId,
+        }),
       });
 
-      if (authError) throw authError;
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Erro ao criar usuário.");
 
-      if (authData.user) {
-        // 2. Criar Perfil vinculado ao Cliente
-        const { error: profileError } = await supabase
-          .from('profiles')
-          .insert({
-            id: authData.user.id,
-            full_name: formData.full_name,
-            role: 'client',
-            client_id: clientId,
-            updated_at: new Date().toISOString()
-          });
-
-        if (profileError) throw profileError;
-
-        setStatus({ type: 'success', msg: "Usuário criado com sucesso! Ele já pode logar." });
-        fetchClientUsers();
-        setIsModalOpen(false);
-        setFormData({ email: "", password: "", full_name: "", role_description: "" });
-      }
+      setStatus({ type: 'success', msg: "Usuário criado com sucesso! Ele já pode logar." });
+      fetchClientUsers();
+      setIsModalOpen(false);
+      setFormData({ email: "", password: "", full_name: "", role_description: "" });
     } catch (err: any) {
       setStatus({ type: 'error', msg: err.message || "Erro ao criar usuário." });
     } finally {

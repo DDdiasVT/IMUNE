@@ -150,15 +150,15 @@ export default function SalespeoplePage() {
   return (
     <div className="space-y-8 pb-20">
       {/* Banner de Meta Global */}
-      <div className="grid gap-6 md:grid-cols-3">
-        <Card className="col-span-2 bg-primary/10 border-primary/20 overflow-hidden relative">
+      <div className="grid gap-4 sm:gap-6 sm:grid-cols-3">
+        <Card className="col-span-full sm:col-span-2 bg-primary/10 border-primary/20 overflow-hidden relative">
            <div className="absolute top-0 right-0 p-8 opacity-10 pointer-events-none">
               <Trophy className="h-32 w-32 rotate-12" />
            </div>
-           <CardContent className="p-8 space-y-6 relative z-10">
+           <CardContent className="p-5 sm:p-8 space-y-6 relative z-10">
               <div className="flex items-center justify-between relative z-10">
                 <div>
-                  <h2 className="text-3xl font-bold">Meta da Agência 🚀</h2>
+                  <h2 className="text-2xl sm:text-3xl font-bold">Meta da Agência 🚀</h2>
                   <p className="text-muted-foreground">Faturamento acumulado para o prêmio coletivo.</p>
                 </div>
                 <Button variant="outline" size="sm" onClick={() => setIsGoalModalOpen(true)} className="gap-2 border-primary/20 hover:bg-primary/20">
@@ -170,7 +170,7 @@ export default function SalespeoplePage() {
                  <div className="flex items-end justify-between">
                     <div>
                       <p className="text-[10px] font-bold uppercase tracking-widest opacity-60">Acumulado</p>
-                      <p className="text-4xl font-black text-primary">R$ {totalRevenue.toLocaleString()}</p>
+                      <p className="text-3xl sm:text-4xl font-black text-primary">R$ {totalRevenue.toLocaleString()}</p>
                     </div>
                     <div className="text-right">
                       <p className="text-[10px] font-bold uppercase tracking-widest opacity-60">Objetivo</p>
@@ -278,7 +278,7 @@ export default function SalespeoplePage() {
         <form onSubmit={handlePersonSubmit} className="space-y-6">
           <Input label="Nome do Vendedor" value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} required />
           <div className="grid gap-4 border-t pt-4">
-             <div className="grid grid-cols-2 gap-4">
+             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-4">
                    <h4 className="text-xs font-bold text-amber-700 uppercase">1. Nível Bronze</h4>
                    <Input label="Valor da Meta" type="number" value={formData.goal_easy} onChange={e => setFormData({...formData, goal_easy: e.target.value})} />
@@ -292,7 +292,7 @@ export default function SalespeoplePage() {
              </div>
              <div className="space-y-4 border-t pt-4">
                 <h4 className="text-xs font-bold text-amber-400 uppercase text-center">3. Nível Ouro</h4>
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <Input label="Valor da Meta" type="number" value={formData.goal_hard} onChange={e => setFormData({...formData, goal_hard: e.target.value})} />
                   <Input label="Prêmio" value={formData.prize_hard} onChange={e => setFormData({...formData, prize_hard: e.target.value})} />
                 </div>

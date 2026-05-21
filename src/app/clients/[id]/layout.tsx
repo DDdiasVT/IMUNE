@@ -1,16 +1,17 @@
 "use client";
 
 import { usePathname, useRouter } from "next/navigation";
-import { 
-  LayoutDashboard, 
-  Target, 
-  FileText, 
-  CheckSquare, 
+import {
+  LayoutDashboard,
+  Target,
+  FileText,
+  CheckSquare,
   Megaphone,
   Info,
-  Settings,
   ChevronLeft,
-  Lock
+  Lock,
+  Kanban,
+  BookMarked
 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import Link from "next/link";
@@ -41,10 +42,12 @@ export default function ClientDetailLayout({
 
   const tabs = [
     { label: "Visão Geral", href: `/clients/${id}`, icon: LayoutDashboard },
+    { label: "CRM", href: `/clients/${id}/crm`, icon: Kanban },
     { label: "Projetos", href: `/clients/${id}/projects`, icon: Target },
     { label: "Campanhas", href: `/clients/${id}/campaigns`, icon: Megaphone },
     { label: "Conteúdo", href: `/clients/${id}/content`, icon: FileText },
     { label: "Tarefas", href: `/clients/${id}/tasks`, icon: CheckSquare },
+    { label: "Documentação", href: `/clients/${id}/docs`, icon: BookMarked },
     { label: "Dados do Cliente", href: `/clients/${id}/info`, icon: Info },
     { label: "Acessos", href: `/clients/${id}/access`, icon: Lock },
   ];
@@ -63,25 +66,28 @@ export default function ClientDetailLayout({
         </div>
       </div>
 
-      <div className="flex items-center gap-1 border-b pb-px overflow-x-auto scrollbar-hide whitespace-nowrap">
-        {tabs.map((tab) => {
-          const isActive = pathname === tab.href;
-          return (
-            <Link
-              key={tab.href}
-              href={tab.href}
-              className={clsx(
-                "flex items-center gap-2 px-4 py-2 text-sm font-medium transition-all border-b-2",
-                isActive 
-                  ? "border-primary text-primary" 
-                  : "border-transparent text-muted-foreground hover:text-foreground hover:border-border"
-              )}
-            >
-              <tab.icon className="h-4 w-4" />
-              {tab.label}
-            </Link>
-          );
-        })}
+      <div className="relative">
+        <div className="flex items-center gap-1 border-b pb-px overflow-x-auto scrollbar-hide whitespace-nowrap">
+          {tabs.map((tab) => {
+            const isActive = pathname === tab.href;
+            return (
+              <Link
+                key={tab.href}
+                href={tab.href}
+                className={clsx(
+                  "flex items-center gap-1.5 px-3 sm:px-4 py-2.5 text-xs sm:text-sm font-medium transition-all border-b-2 shrink-0",
+                  isActive
+                    ? "border-primary text-primary"
+                    : "border-transparent text-muted-foreground hover:text-foreground hover:border-border"
+                )}
+              >
+                <tab.icon className="h-3.5 w-3.5 sm:h-4 sm:w-4 shrink-0" />
+                {tab.label}
+              </Link>
+            );
+          })}
+        </div>
+        <div className="absolute right-0 top-0 h-full w-12 bg-gradient-to-l from-background to-transparent pointer-events-none" />
       </div>
 
       <div className="py-4">

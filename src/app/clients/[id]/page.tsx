@@ -1,11 +1,13 @@
 "use client";
 
-import { 
-  TrendingUp, 
-  Users, 
-  DollarSign, 
-  Target, 
-  MousePointer2, 
+"use client";
+
+import {
+  TrendingUp,
+  Users,
+  DollarSign,
+  Target,
+  MousePointer2,
   MessageSquare,
   ArrowUpRight,
   ArrowDownRight

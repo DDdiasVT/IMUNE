@@ -20,8 +20,10 @@ const stages = [
 
 import { db } from "@/lib/services";
 import { supabase } from "@/lib/supabase";
+import { useAuth } from "@/contexts/AuthContext";
 
 export function ContentPipeline() {
+  const { profile } = useAuth();
   const [items, setItems] = useState<ContentItem[]>([]);
   const [clients, setClients] = useState<Client[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -57,8 +59,8 @@ export function ContentPipeline() {
     try {
       const payload = {
         ...formData,
-        client_id: formData.client_id || null, // Se estiver vazio, salva como nulo
-        assigned_to: "Joao Vitor",
+        client_id: formData.client_id || null,
+        assigned_to: profile?.full_name || null,
       };
 
       if (editingItem) {
@@ -131,7 +133,7 @@ export function ContentPipeline() {
                         <p className="text-[10px] text-primary font-bold uppercase">{client?.name || 'Agência'}</p>
                         <h4 className="font-medium text-sm line-clamp-2">{item.title}</h4>
                       </div>
-                      <div className="flex flex-col gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                      <div className="flex flex-col gap-1 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
                         <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => openModal(item)}>
                           <Edit2 className="h-3 w-3" />
                         </Button>
@@ -143,7 +145,7 @@ export function ContentPipeline() {
                     
                     <div className="flex items-center justify-between mt-4">
                        <Badge variant="secondary" className="text-[10px]">{item.type}</Badge>
-                       <div className="h-6 w-6 rounded-full bg-secondary flex items-center justify-center text-[8px]">JV</div>
+                       <div className="h-6 w-6 rounded-full bg-secondary flex items-center justify-center text-[8px]">{item.assigned_to?.substring(0, 2).toUpperCase() || "--"}</div>
                     </div>
                   </Card>
                 );
@@ -173,7 +175,7 @@ export function ContentPipeline() {
               ))}
             </select>
           </div>
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-1.5">
               <label className="text-sm font-medium text-muted-foreground ml-1">Tipo</label>
               <select 

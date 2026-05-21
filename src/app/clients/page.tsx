@@ -192,11 +192,11 @@ export default function ClientsPage() {
                       </div>
                     </div>
 
-                    <div className="flex items-center gap-2">
-                      <Button variant="ghost" size="icon" className="h-8 w-8 opacity-0 group-hover:opacity-100" onClick={(e) => { e.preventDefault(); openModal(client); }}>
+                    <div className="flex items-center gap-1">
+                      <Button variant="ghost" size="icon" className="h-8 w-8 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity" onClick={(e) => { e.preventDefault(); openModal(client); }}>
                         <Edit2 className="h-4 w-4" />
                       </Button>
-                      <Button variant="ghost" size="icon" className="h-8 w-8 opacity-0 group-hover:opacity-100 text-destructive" onClick={(e) => handleDelete(client.id, e)}>
+                      <Button variant="ghost" size="icon" className="h-8 w-8 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 text-destructive transition-opacity" onClick={(e) => handleDelete(client.id, e)}>
                         <Trash2 className="h-4 w-4" />
                       </Button>
                       <ChevronRight className="h-5 w-5 text-muted-foreground group-hover:text-primary transition-colors" />
@@ -215,17 +215,17 @@ export default function ClientsPage() {
         title={editingClient ? "Editar Cliente" : "Adicionar Cliente"}
       >
         <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="grid grid-cols-2 gap-4">
-            <Input 
-              label="Nome do Cliente" 
-              placeholder="Ex: Dra. Mariana Costa" 
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <Input
+              label="Nome do Cliente"
+              placeholder="Ex: Dra. Mariana Costa"
               value={formData.name}
               onChange={(e) => setFormData({...formData, name: e.target.value})}
               required
             />
-            <Input 
-              label="Nicho / Ramo" 
-              placeholder="Ex: Psicologia" 
+            <Input
+              label="Nicho / Ramo"
+              placeholder="Ex: Psicologia"
               value={formData.niche}
               onChange={(e) => setFormData({...formData, niche: e.target.value})}
             />
@@ -240,18 +240,18 @@ export default function ClientsPage() {
           {!editingClient && (
             <div className="p-4 bg-primary/5 border border-primary/20 rounded-xl space-y-3">
               <p className="text-[10px] uppercase font-bold text-primary tracking-widest">Criar Primeiro Acesso (Opcional)</p>
-              <div className="grid grid-cols-2 gap-3">
-                <Input 
-                  label="E-mail de Acesso" 
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <Input
+                  label="E-mail de Acesso"
                   type="email"
-                  placeholder="cliente@email.com" 
+                  placeholder="cliente@email.com"
                   value={formData.initialEmail}
                   onChange={(e) => setFormData({...formData, initialEmail: e.target.value})}
                 />
-                <Input 
-                  label="Senha de Acesso" 
+                <Input
+                  label="Senha de Acesso"
                   type="password"
-                  placeholder="Min. 6 caracteres" 
+                  placeholder="Min. 6 caracteres"
                   value={formData.initialPassword}
                   onChange={(e) => setFormData({...formData, initialPassword: e.target.value})}
                 />

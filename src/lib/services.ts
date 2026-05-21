@@ -35,6 +35,11 @@ export const db = {
       if (error) throw error;
       return data as Service;
     },
+    async update(id: string, updates: Partial<Service>) {
+      const { data, error } = await supabase.from('services').update(updates).eq('id', id).select().single();
+      if (error) throw error;
+      return data as Service;
+    },
     async delete(id: string) {
       const { error } = await supabase.from('services').delete().eq('id', id);
       if (error) throw error;

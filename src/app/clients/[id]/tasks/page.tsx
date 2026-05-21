@@ -66,7 +66,7 @@ export default function ClientTasks({ params }: { params: Promise<{ id: string }
               </div>
             </div>
             {task.status !== 'done' && (
-              <Button variant="ghost" size="sm" className="opacity-0 group-hover:opacity-100 text-xs">
+              <Button variant="ghost" size="sm" className="opacity-100 sm:opacity-0 sm:group-hover:opacity-100 text-xs">
                 Marcar como feita
               </Button>
             )}

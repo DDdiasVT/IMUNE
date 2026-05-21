@@ -47,13 +47,20 @@ export default function ServicesPage() {
     const operational_cost = parseFloat(formData.operational_cost);
 
     try {
+      const margin = price - operational_cost;
       if (editingService) {
-        // Update logic (need to add to services db)
+        await db.services.update(editingService.id, {
+          ...formData,
+          price,
+          operational_cost,
+          margin
+        });
       } else {
         await db.services.create({
           ...formData,
           price,
-          operational_cost
+          operational_cost,
+          margin
         });
       }
       fetchServices();
@@ -130,7 +137,7 @@ export default function ServicesPage() {
                   <div className="text-center">
                     <p className="text-[10px] text-muted-foreground uppercase font-bold">Margem</p>
                     <p className="text-sm font-bold text-emerald-500">
-                      {((s.margin / s.price) * 100).toFixed(0)}%
+                      {s.price > 0 ? (((s.price - s.operational_cost) / s.price) * 100).toFixed(0) : 0}%
                     </p>
                   </div>
                   <div className="text-center hidden md:block">
@@ -142,10 +149,10 @@ export default function ServicesPage() {
                 </div>
 
                 <div className="flex items-center gap-2">
-                  <Button variant="ghost" size="icon" className="h-8 w-8 opacity-0 group-hover:opacity-100" onClick={() => openModal(s)}>
+                  <Button variant="ghost" size="icon" className="h-8 w-8 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity" onClick={() => openModal(s)}>
                     <Edit2 className="h-4 w-4" />
                   </Button>
-                  <Button variant="ghost" size="icon" className="h-8 w-8 opacity-0 group-hover:opacity-100 text-destructive" onClick={() => handleDelete(s.id)}>
+                  <Button variant="ghost" size="icon" className="h-8 w-8 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity text-destructive" onClick={() => handleDelete(s.id)}>
                     <Trash2 className="h-4 w-4" />
                   </Button>
                 </div>
@@ -159,7 +166,7 @@ export default function ServicesPage() {
         <form onSubmit={handleSubmit} className="space-y-4">
           <Input label="Nome do Serviço" value={formData.name} onChange={(e) => setFormData({...formData, name: e.target.value})} required />
           <Input label="Categoria" value={formData.category} onChange={(e) => setFormData({...formData, category: e.target.value})} />
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <Input label="Preço (R$)" type="number" value={formData.price} onChange={(e) => setFormData({...formData, price: e.target.value})} required />
             <Input label="Custo Op. (R$)" type="number" value={formData.operational_cost} onChange={(e) => setFormData({...formData, operational_cost: e.target.value})} required />
           </div>

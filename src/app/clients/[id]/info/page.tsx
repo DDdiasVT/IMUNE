@@ -166,7 +166,7 @@ export default function ClientInfo({ params }: { params: Promise<{ id: string }>
                         <p className="text-[10px] text-muted-foreground truncate max-w-[200px]">{asset.url}</p>
                       </div>
                     </a>
-                    <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <div className="flex items-center gap-1 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
                       <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive" onClick={() => handleDeleteAsset(asset.id)}>
                         <Trash2 className="h-3 w-3" />
                       </Button>

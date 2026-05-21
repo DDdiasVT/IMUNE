@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useEffect } from "react";
 import { 
   LayoutDashboard, 
   Users, 
@@ -19,31 +20,51 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/AuthContext";
+import { BookMarked } from "lucide-react";
 
-const menuItems = [
-  { icon: LayoutDashboard, label: "Dashboard", href: "/" },
-  { icon: Users, label: "Clientes", href: "/clients" },
-  { icon: Kanban, label: "CRM", href: "/crm" },
-  { icon: Megaphone, label: "Campanhas", href: "/campaigns" },
-  { icon: FileText, label: "Conteúdo", href: "/content" },
-  { icon: CheckSquare, label: "Tarefas", href: "/tasks" },
-  { icon: ShoppingBag, label: "Comercial", href: "/commercial" },
-  { icon: DollarSign, label: "Financeiro", href: "/finance" },
-  { icon: BarChart3, label: "Métricas", href: "/metrics" },
-  { icon: Calendar, label: "Calendário", href: "/calendar" },
-  { icon: BookOpen, label: "Base de Conhecimento", href: "/wiki" },
+const adminMemberItems = [
+  { icon: LayoutDashboard, label: "Dashboard",            href: "/" },
+  { icon: Users,           label: "Clientes",             href: "/clients" },
+  { icon: Kanban,          label: "CRM",                  href: "/crm" },
+  { icon: Megaphone,       label: "Campanhas",            href: "/campaigns" },
+  { icon: FileText,        label: "Conteúdo",             href: "/content" },
+  { icon: CheckSquare,     label: "Tarefas",              href: "/tasks" },
+  { icon: ShoppingBag,     label: "Comercial",            href: "/commercial" },
+  { icon: DollarSign,      label: "Financeiro",           href: "/finance" },
+  { icon: BarChart3,       label: "Métricas",             href: "/metrics" },
+  { icon: Calendar,        label: "Calendário",           href: "/calendar" },
+  { icon: BookOpen,        label: "Base de Conhecimento", href: "/wiki" },
 ];
+
+function buildClientItems(clientId: string) {
+  return [
+    { icon: LayoutDashboard, label: "Dashboard",    href: "/" },
+    { icon: Kanban,          label: "CRM",          href: "/crm" },
+    { icon: Megaphone,       label: "Campanhas",    href: `/clients/${clientId}/campaigns` },
+    { icon: BarChart3,       label: "Métricas",     href: "/metrics" },
+    { icon: FileText,        label: "Conteúdo",     href: `/clients/${clientId}/content` },
+    { icon: BookMarked,      label: "Documentação", href: `/clients/${clientId}/docs` },
+  ];
+}
 
 export function Sidebar() {
   const pathname = usePathname();
-  const { isClient } = useAuth();
+  const { profile } = useAuth();
 
-  const filteredMenuItems = menuItems.filter(item => {
-    if (isClient) {
-      return ["Dashboard", "Campanhas", "Métricas", "Conteúdo"].includes(item.label);
-    }
-    return true;
-  });
+  useEffect(() => {
+    document.getElementById('sidebar')?.classList.add('-translate-x-full');
+    document.getElementById('sidebar-overlay')?.classList.add('hidden');
+  }, [pathname]);
+
+  const isAdminOrMember = profile?.role === 'admin' || profile?.role === 'member';
+
+  const menuItems = !profile
+    ? []
+    : isAdminOrMember
+      ? adminMemberItems
+      : profile.client_id
+        ? buildClientItems(profile.client_id)
+        : [];
 
   return (
     <>
@@ -85,8 +106,8 @@ export function Sidebar() {
           </button>
         </div>
       <nav className="flex-1 px-4 space-y-1 pb-10">
-        {filteredMenuItems.map((item) => {
-          const isActive = pathname === item.href;
+        {menuItems.map((item) => {
+          const isActive = pathname === item.href || pathname.startsWith(item.href + "/") && item.href !== "/";
           return (
             <Link
               key={item.href}

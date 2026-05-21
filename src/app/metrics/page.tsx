@@ -187,7 +187,7 @@ export default function MetricsPage() {
       {/* Header & Tabs */}
       <div className="flex items-center justify-between shrink-0">
         <div className="flex flex-col">
-          <h2 className="text-3xl font-bold tracking-tight">Inteligência de Dados</h2>
+          <h2 className="text-2xl md:text-3xl font-bold tracking-tight">Inteligência de Dados</h2>
           <div className="flex items-center gap-4 mt-2">
             <button 
               onClick={() => setActiveTab('dashboard')}
@@ -389,8 +389,8 @@ export default function MetricsPage() {
 
       {/* MODAL LANÇAMENTO SEMANAL */}
       <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} title="Lançar Dados Semanais">
-        <form onSubmit={handleSubmit} className="space-y-4 max-h-[70vh] overflow-y-auto px-1 custom-scrollbar">
-          <div className="grid grid-cols-2 gap-4">
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-1.5">
               <label className="text-sm font-medium text-muted-foreground">Conta / Cliente</label>
               <select className="w-full h-10 rounded-lg border bg-secondary/50 px-3 text-sm outline-none" value={formData.client_id} onChange={e => setFormData({...formData, client_id: e.target.value})} required>
@@ -401,8 +401,8 @@ export default function MetricsPage() {
             </div>
             <Input label="Data Inicial da Semana" type="date" value={formData.period_date} onChange={e => setFormData({...formData, period_date: e.target.value})} required />
           </div>
-          <div className="grid grid-cols-3 gap-4 border-t pt-4"><Input label="Investimento (R$)" type="number" value={formData.investment} onChange={e => setFormData({...formData, investment: e.target.value})} /><Input label="Faturamento (R$)" type="number" value={formData.revenue} onChange={e => setFormData({...formData, revenue: e.target.value})} /><Input label="Novos Clientes" type="number" value={formData.new_customers} onChange={e => setFormData({...formData, new_customers: e.target.value})} /></div>
-          <div className="grid grid-cols-3 gap-4 border-t pt-4"><Input label="Leads" type="number" value={formData.leads} onChange={e => setFormData({...formData, leads: e.target.value})} /><Input label="Impressões" type="number" value={formData.impressions} onChange={e => setFormData({...formData, impressions: e.target.value})} /><Input label="Cliques (Ads)" type="number" value={formData.clicks} onChange={e => setFormData({...formData, clicks: e.target.value})} /></div>
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 border-t pt-4"><Input label="Investimento (R$)" type="number" value={formData.investment} onChange={e => setFormData({...formData, investment: e.target.value})} /><Input label="Faturamento (R$)" type="number" value={formData.revenue} onChange={e => setFormData({...formData, revenue: e.target.value})} /><Input label="Novos Clientes" type="number" value={formData.new_customers} onChange={e => setFormData({...formData, new_customers: e.target.value})} /></div>
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 border-t pt-4"><Input label="Leads" type="number" value={formData.leads} onChange={e => setFormData({...formData, leads: e.target.value})} /><Input label="Impressões" type="number" value={formData.impressions} onChange={e => setFormData({...formData, impressions: e.target.value})} /><Input label="Cliques (Ads)" type="number" value={formData.clicks} onChange={e => setFormData({...formData, clicks: e.target.value})} /></div>
           <div className="grid grid-cols-3 gap-4 border-t pt-4 bg-secondary/20 p-3 rounded-lg"><Input label="Page Views" type="number" value={formData.page_views} onChange={e => setFormData({...formData, page_views: e.target.value})} /><Input label="Cliques Whats" type="number" value={formData.whatsapp_clicks} onChange={e => setFormData({...formData, whatsapp_clicks: e.target.value})} /><Input label="Taxa Scroll (%)" type="number" value={formData.scroll_rate} onChange={e => setFormData({...formData, scroll_rate: e.target.value})} /></div>
           <div className="flex justify-end gap-3 pt-4"><Button variant="outline" type="button" onClick={() => setIsModalOpen(false)}>Cancelar</Button><Button type="submit">Salvar Semana</Button></div>
         </form>
@@ -410,8 +410,8 @@ export default function MetricsPage() {
 
       {/* MODAL NOVO TESTE A/B */}
       <Modal isOpen={isABModalOpen} onClose={() => setIsABModalOpen(false)} title="Novo Experimento A/B">
-        <form onSubmit={handleABSubmit} className="space-y-4 max-h-[80vh] overflow-y-auto px-1 custom-scrollbar">
-          <div className="grid grid-cols-2 gap-4">
+        <form onSubmit={handleABSubmit} className="space-y-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-1.5">
               <label className="text-sm font-medium text-muted-foreground">Cliente</label>
               <select className="w-full h-10 rounded-lg border bg-secondary/50 px-3 text-sm outline-none" value={abFormData.client_id} onChange={e => setAbFormData({...abFormData, client_id: e.target.value})} required>

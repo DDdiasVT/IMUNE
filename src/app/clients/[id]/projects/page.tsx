@@ -64,7 +64,7 @@ export default function ClientProjects({ params }: { params: Promise<{ id: strin
             <CardHeader className="pb-2">
               <div className="flex items-center justify-between mb-2">
                 <Badge variant="outline" className="text-[10px] uppercase tracking-widest">{project.type || 'Geral'}</Badge>
-                <Button variant="ghost" size="icon" className="h-6 w-6 opacity-0 group-hover:opacity-100">
+                <Button variant="ghost" size="icon" className="h-6 w-6 opacity-100 sm:opacity-0 sm:group-hover:opacity-100">
                   <MoreHorizontal className="h-4 w-4" />
                 </Button>
               </div>

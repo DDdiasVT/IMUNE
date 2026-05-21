@@ -5,7 +5,7 @@ import { useRouter, usePathname } from "next/navigation";
 import { useEffect } from "react";
 
 export function ProtectedRoute({ children }: { children: React.ReactNode }) {
-  const { user, loading } = useAuth();
+  const { user, profile, loading } = useAuth();
   const router = useRouter();
   const pathname = usePathname();
 
@@ -26,8 +26,13 @@ export function ProtectedRoute({ children }: { children: React.ReactNode }) {
     );
   }
 
-  // Se não estiver logado e não for página de login, não mostra nada enquanto redireciona
   if (!user && pathname !== "/login") {
+    return null;
+  }
+
+  // Usuário logado mas sem perfil no banco — redireciona para setup
+  if (user && !profile) {
+    router.push("/setup-admin");
     return null;
   }
 

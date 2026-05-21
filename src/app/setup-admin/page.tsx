@@ -3,52 +3,46 @@
 import { useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { Button } from "@/components/ui/Button";
+import { Input } from "@/components/ui/Input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
 import { ShieldCheck, Loader2 } from "lucide-react";
 
 export default function SetupAdminPage() {
   const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
   const [message, setMessage] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
 
-  const createAppAdmin = async () => {
+  const createAppAdmin = async (e: React.FormEvent) => {
+    e.preventDefault();
     setStatus("loading");
-    setMessage("Criando conta mestre...");
+    setMessage("Autenticando...");
 
     try {
-      // 1. Tentar cadastrar o usuário
-      const { data, error: signUpError } = await supabase.auth.signUp({
-        email: "joaovitordiaso@hotmail.com",
-        password: "Jucabala123",
-      });
+      // Tenta login primeiro (conta já existe)
+      let userId: string | undefined;
+      const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({ email, password });
 
-      if (signUpError) {
-        if (signUpError.message.includes("already registered")) {
-          setMessage("Essa conta já existe no Auth. Vamos tentar promover para Admin...");
-        } else {
-          throw signUpError;
-        }
+      if (!signInError && signInData.user) {
+        userId = signInData.user.id;
+        setMessage("Conta autenticada. Vinculando perfil de Admin...");
+      } else {
+        // Conta não existe ainda — cria
+        setMessage("Criando conta...");
+        const { data: signUpData, error: signUpError } = await supabase.auth.signUp({ email, password });
+        if (signUpError) throw signUpError;
+        userId = signUpData.user?.id;
+        if (!userId) throw new Error("Não foi possível obter o ID do usuário após cadastro.");
+        setMessage("Conta criada. Vinculando perfil de Admin...");
       }
 
-      const userId = data.user?.id || (await supabase.auth.signInWithPassword({
-        email: "joaovitordiaso@hotmail.com",
-        password: "Jucabala123",
-      })).data.user?.id;
-
-      if (!userId) throw new Error("Não foi possível obter o ID do usuário.");
-
-      // 2. Tentar criar o perfil de admin
-      // Nota: Se o RLS barrar, pediremos para rodar o SQL, mas tentaremos aqui primeiro
       const { error: profileError } = await supabase
         .from("profiles")
-        .upsert({
-          id: userId,
-          full_name: "Joao Vitor (Admin)",
-          role: "admin"
-        });
+        .upsert({ id: userId, full_name: "Admin", role: "admin" }, { onConflict: "id" });
 
       if (profileError) {
-        console.error(profileError);
-        setMessage("Usuário criado, mas o banco bloqueou a promoção para Admin. Por favor, rode o SQL que te passei no painel do Supabase.");
+        console.error("Erro no upsert do perfil:", profileError);
+        setMessage(`Conta OK, mas o banco bloqueou o perfil (RLS). Rode este SQL no painel do Supabase:\n\nINSERT INTO profiles (id, full_name, role) VALUES ('${userId}', 'Admin', 'admin') ON CONFLICT (id) DO UPDATE SET role = 'admin';`);
         setStatus("error");
       } else {
         setMessage("Sucesso! Você agora é o Administrador Mestre da IMUNE OS.");
@@ -71,13 +65,29 @@ export default function SetupAdminPage() {
         </CardHeader>
         <CardContent className="space-y-6 text-center">
           <p className="text-sm text-muted-foreground">
-            Clique no botão abaixo para gerar o acesso mestre para <strong>joaovitordiaso@hotmail.com</strong>.
+            Informe os dados da conta que receberá acesso de administrador mestre.
           </p>
 
           {status === "idle" && (
-            <Button onClick={createAppAdmin} className="w-full">
-              Gerar meu Acesso Agora
-            </Button>
+            <form onSubmit={createAppAdmin} className="space-y-4 text-left">
+              <Input
+                label="E-mail"
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+              />
+              <Input
+                label="Senha"
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+              />
+              <Button type="submit" className="w-full">
+                Gerar Acesso de Admin
+              </Button>
+            </form>
           )}
 
           {status === "loading" && (

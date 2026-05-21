@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { CheckCircle2, Clock, AlertCircle, Plus, Filter, Search, Trash2, Edit2 } from "lucide-react";
+import { CheckCircle2, Clock, Plus, Trash2, Edit2, Megaphone } from "lucide-react";
 import { Badge } from "@/components/ui/Badge";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
@@ -10,10 +10,14 @@ import { Input } from "@/components/ui/Input";
 import { Task, Client } from "@/types";
 
 import { db } from "@/lib/services";
+import { supabase } from "@/lib/supabase";
+import { useAuth } from "@/contexts/AuthContext";
 
 export default function TasksPage() {
+  const { profile } = useAuth();
   const [tasks, setTasks] = useState<Task[]>([]);
   const [clients, setClients] = useState<Client[]>([]);
+  const [campaigns, setCampaigns] = useState<any[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingTask, setEditingTask] = useState<Task | null>(null);
   const [loading, setLoading] = useState(true);
@@ -32,12 +36,14 @@ export default function TasksPage() {
 
   const fetchData = async () => {
     try {
-      const [tasksData, clientsData] = await Promise.all([
+      const [tasksData, clientsData, campsRes] = await Promise.all([
         db.tasks.list(),
-        db.clients.list()
+        db.clients.list(),
+        supabase.from("campaigns").select("id, name"),
       ]);
       setTasks(tasksData);
       setClients(clientsData);
+      setCampaigns(campsRes.data || []);
     } catch (err) {
       console.error("Error fetching tasks data:", err);
     } finally {
@@ -53,7 +59,7 @@ export default function TasksPage() {
       } else {
         await db.tasks.create({
           ...formData,
-          assigned_to: "Joao Vitor",
+          assigned_to: profile?.full_name || null,
         });
       }
       fetchData();
@@ -108,12 +114,12 @@ export default function TasksPage() {
 
   return (
     <div className="space-y-8">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h2 className="text-3xl font-bold tracking-tight">Tarefas</h2>
+          <h2 className="text-2xl md:text-3xl font-bold tracking-tight">Tarefas</h2>
           <p className="text-muted-foreground">Mantenha a operação em dia e não perca prazos.</p>
         </div>
-        <Button size="sm" className="gap-2" onClick={() => openModal()}>
+        <Button size="sm" className="gap-2 w-full sm:w-auto justify-center" onClick={() => openModal()}>
           <Plus className="h-4 w-4" />
           Nova Tarefa
         </Button>
@@ -124,30 +130,39 @@ export default function TasksPage() {
           const client = clients.find(c => c.id === task.client_id);
           return (
             <Card key={task.id} className="flex items-center justify-between p-4 hover:border-primary/50 transition-colors group">
-              <div className="flex items-center gap-4">
-                <button onClick={() => toggleStatus(task)} className={`flex h-10 w-10 items-center justify-center rounded-full transition-colors ${
+              <div className="flex items-center gap-3 md:gap-4 min-w-0">
+                <button onClick={() => toggleStatus(task)} className={`flex-shrink-0 flex h-9 w-9 items-center justify-center rounded-full transition-colors ${
                   task.status === 'completed' ? 'bg-emerald-500/10 text-emerald-500' : 'bg-secondary'
                 }`}>
                   {task.status === 'completed' ? <CheckCircle2 className="h-5 w-5" /> : <Clock className="h-5 w-5 text-muted-foreground" />}
                 </button>
-                <div>
-                  <h4 className={`text-sm font-medium ${task.status === 'completed' ? 'line-through text-muted-foreground' : ''}`}>
+                <div className="min-w-0">
+                  <h4 className={`text-sm font-medium truncate ${task.status === 'completed' ? 'line-through text-muted-foreground' : ''}`}>
                     {task.title}
                   </h4>
-                  <div className="flex items-center gap-3 mt-1">
+                  <div className="flex flex-wrap items-center gap-2 mt-1">
                     <span className="text-xs text-primary font-bold">{client?.name || 'Agência'}</span>
-                    <div className="h-1 w-1 rounded-full bg-border" />
-                    <Badge variant={task.priority === 'high' ? 'destructive' : 'secondary'} className="text-[10px] px-1.5 py-0 uppercase">
+                    {(task as any).campaign_id && (() => {
+                      const camp = campaigns.find(c => c.id === (task as any).campaign_id);
+                      return camp ? (
+                        <span className="flex items-center gap-1 text-[10px] text-muted-foreground bg-secondary px-1.5 py-0.5 rounded-md">
+                          <Megaphone className="h-2.5 w-2.5" />
+                          {camp.name}
+                        </span>
+                      ) : null;
+                    })()}
+                    <div className="h-1 w-1 rounded-full bg-border hidden sm:block" />
+                    <Badge variant={task.priority === 'high' ? 'destructive' : 'secondary'} className="text-[10px] px-1.5 py-0 uppercase hidden sm:flex">
                       {task.priority}
                     </Badge>
                   </div>
                 </div>
               </div>
-              <div className="flex items-center gap-2">
-                <Button variant="ghost" size="icon" className="h-8 w-8 opacity-0 group-hover:opacity-100" onClick={() => openModal(task)}>
+              <div className="flex items-center gap-1">
+                <Button variant="ghost" size="icon" className="h-8 w-8 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity" onClick={() => openModal(task)}>
                   <Edit2 className="h-4 w-4" />
                 </Button>
-                <Button variant="ghost" size="icon" className="h-8 w-8 opacity-0 group-hover:opacity-100 text-destructive" onClick={() => handleDelete(task.id)}>
+                <Button variant="ghost" size="icon" className="h-8 w-8 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 text-destructive transition-opacity" onClick={() => handleDelete(task.id)}>
                   <Trash2 className="h-4 w-4" />
                 </Button>
               </div>
@@ -172,7 +187,7 @@ export default function TasksPage() {
               ))}
             </select>
           </div>
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-1.5">
               <label className="text-sm font-medium text-muted-foreground ml-1">Prioridade</label>
               <select 

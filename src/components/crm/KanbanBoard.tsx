@@ -108,9 +108,12 @@ export function KanbanBoard({ clientId, stages: stagesProp }: { clientId?: strin
   const [editingLead, setEditingLead] = useState<Lead | null>(null);
   const [loading, setLoading] = useState(true);
 
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<{
+    name: string; phone: string; instagram: string; source: string;
+    status: Lead['status']; potential_value: string;
+  }>({
     name: "", phone: "", instagram: "", source: "",
-    status: stages[0]?.id ?? "new_lead",
+    status: (stages[0]?.id ?? "new_lead") as Lead['status'],
     potential_value: "",
   });
 
@@ -297,7 +300,7 @@ export function KanbanBoard({ clientId, stages: stagesProp }: { clientId?: strin
             <select
               className="flex h-10 w-full rounded-lg border border-input bg-secondary/50 px-3 py-2 text-sm focus:ring-2 focus:ring-primary/20 outline-none"
               value={formData.status}
-              onChange={(e) => setFormData({ ...formData, status: e.target.value })}
+              onChange={(e) => setFormData({ ...formData, status: e.target.value as Lead['status'] })}
             >
               {stages.map((s) => <option key={s.id} value={s.id}>{s.name}</option>)}
             </select>

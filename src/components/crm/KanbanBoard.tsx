@@ -267,7 +267,7 @@ export function KanbanBoard({ clientId, stages: stagesProp }: { clientId?: strin
               <Button
                 variant="ghost"
                 className="w-full justify-start gap-2 h-9 text-muted-foreground hover:text-foreground border border-dashed border-border/50 shrink-0"
-                onClick={() => { setFormData(f => ({ ...f, status: stage.id })); setIsModalOpen(true); }}
+                onClick={() => { setFormData(f => ({ ...f, status: stage.id as Lead['status'] })); setIsModalOpen(true); }}
               >
                 <Plus className="h-4 w-4" /><span className="text-sm">Novo Lead</span>
               </Button>

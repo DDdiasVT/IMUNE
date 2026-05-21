@@ -11,7 +11,8 @@ import {
   ChevronLeft,
   Lock,
   Kanban,
-  BookMarked
+  BookMarked,
+  TrendingDown
 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import Link from "next/link";
@@ -45,6 +46,7 @@ export default function ClientDetailLayout({
     { label: "CRM", href: `/clients/${id}/crm`, icon: Kanban },
     { label: "Projetos", href: `/clients/${id}/projects`, icon: Target },
     { label: "Campanhas", href: `/clients/${id}/campaigns`, icon: Megaphone },
+    { label: "Funis", href: `/clients/${id}/funnels`, icon: TrendingDown },
     { label: "Conteúdo", href: `/clients/${id}/content`, icon: FileText },
     { label: "Tarefas", href: `/clients/${id}/tasks`, icon: CheckSquare },
     { label: "Documentação", href: `/clients/${id}/docs`, icon: BookMarked },

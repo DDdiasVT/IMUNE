@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/lib/supabase";
 import { useRouter } from "next/navigation";
+import { useAuth } from "@/contexts/AuthContext";
 import { Rocket, Mail, Lock, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
@@ -14,12 +15,14 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const router = useRouter();
+  const { user, loading: authLoading } = useAuth();
 
+  // Redireciona assim que o AuthContext confirmar que o usuário está logado
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (session) router.replace("/");
-    });
-  }, []);
+    if (!authLoading && user) {
+      router.replace("/");
+    }
+  }, [user, authLoading]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -34,9 +37,9 @@ export default function LoginPage() {
     if (loginError) {
       setError("Credenciais inválidas ou erro de conexão.");
       setLoading(false);
-    } else {
-      router.push("/");
     }
+    // Sucesso: não navega aqui. O useEffect acima redireciona
+    // assim que o AuthContext confirmar o user (evita race condition).
   };
 
   return (

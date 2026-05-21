@@ -167,7 +167,7 @@ export function KanbanBoard({ clientId, stages: stagesProp }: { clientId?: strin
       return;
     }
 
-    setLeads((prev) => prev.map((l) => l.id === lead.id ? { ...l, status: newStatus } : l));
+    setLeads((prev) => prev.map((l) => l.id === lead.id ? { ...l, status: newStatus as Lead['status'] } : l));
     try {
       await db.leads.update(lead.id, { status: newStatus });
     } catch {

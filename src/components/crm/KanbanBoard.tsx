@@ -238,7 +238,7 @@ export function KanbanBoard({ clientId, stages: stagesProp }: { clientId?: strin
       setFormData({ name: lead.name, phone: lead.phone || "", instagram: lead.instagram || "", source: lead.source || "", status: lead.status, potential_value: lead.potential_value?.toString() || "" });
     } else {
       setEditingLead(null);
-      setFormData({ name: "", phone: "", instagram: "", source: "", status: stages[0]?.id ?? "new_lead", potential_value: "" });
+      setFormData({ name: "", phone: "", instagram: "", source: "", status: (stages[0]?.id ?? "new_lead") as Lead['status'], potential_value: "" });
     }
     setIsModalOpen(true);
   };

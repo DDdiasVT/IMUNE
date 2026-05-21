@@ -10,10 +10,15 @@ export function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
 
   useEffect(() => {
-    if (!loading && !user && pathname !== "/login") {
+    if (loading) return;
+    if (!user && pathname !== "/login") {
       router.push("/login");
+      return;
     }
-  }, [user, loading, pathname, router]);
+    if (user && !profile && pathname !== "/setup-admin") {
+      router.push("/setup-admin");
+    }
+  }, [user, profile, loading, pathname, router]);
 
   if (loading) {
     return (
@@ -26,15 +31,8 @@ export function ProtectedRoute({ children }: { children: React.ReactNode }) {
     );
   }
 
-  if (!user && pathname !== "/login") {
-    return null;
-  }
-
-  // Usuário logado mas sem perfil no banco — redireciona para setup
-  if (user && !profile) {
-    router.push("/setup-admin");
-    return null;
-  }
+  if (!user && pathname !== "/login") return null;
+  if (user && !profile && pathname !== "/setup-admin") return null;
 
   return <>{children}</>;
 }
